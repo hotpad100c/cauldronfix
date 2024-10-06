@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "cauldronfix:cauldron_with_obsidian",
+    "cauldronfix:cauldron_with_stone",
+    "cauldronfix:cauldron_with_some_cobble_stones",
+    "cauldronfix:cauldron_with_cobble_stone"
+  ]
+}
