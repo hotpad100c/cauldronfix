@@ -7,6 +7,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.BlockView;
+import net.minecraft.world.World;
 
 public class CAULDRON_WITH_OBSIDIAN extends Block {
     public CAULDRON_WITH_OBSIDIAN(Settings settings) {
@@ -31,5 +32,13 @@ public class CAULDRON_WITH_OBSIDIAN extends Block {
                 VoxelShapes.cuboid(0.125, 0.25, 0.125, 0.875, 0.9375, 0.875)
         );
     }*/
+    @Override
+    protected boolean hasComparatorOutput(BlockState state) {
+        return true;
+    }
+    @Override
+    protected int getComparatorOutput(BlockState state, World world, BlockPos pos) {
+        return 30;
+    }
 
 }

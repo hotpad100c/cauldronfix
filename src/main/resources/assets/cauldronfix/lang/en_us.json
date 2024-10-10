@@ -1,7 +1,12 @@
 {
   "itemGroup.cauldron_fix": "Cauldron Fix",
-  "block.cauldronfix.cauldron_with_obsidian": "A cauldron full of obsidian",
-  "block.cauldronfix.cauldron_with_stone": "A cauldron full of stones",
-  "block.cauldronfix.cauldron_with_cobble_stone": "A cauldron full of cobblestones",
-  "block.cauldronfix.cauldron_with_some_cobble_stones": "A cauldron half full of cobblestones"
+  "block.cauldronfix.cauldron_with_obsidian": "A Cauldron Full Of Obsidian",
+  "block.cauldronfix.cauldron_with_stone": "A Cauldron Full Of Stones",
+  "block.cauldronfix.cauldron_with_cobble_stone": "A Cauldron Full Of Cobblestones",
+  "block.cauldronfix.cauldron_with_some_cobble_stones": "A Cauldron Half Full Of Cobblestones",
+  "block.cauldronfix.cauldron_with_gravel": "A Cauldron Full Of Gravel",
+  "block.cauldronfix.cauldron_with_dragons_breath": "Dragon's Breath Cauldron",
+  "block.cauldronfix.cauldron_with_honey": "Honey Cauldron",
+  "block.cauldronfix.cauldron_with_milk": "Milk Cauldron"
+
 }

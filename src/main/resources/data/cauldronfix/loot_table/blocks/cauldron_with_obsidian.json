@@ -10,48 +10,31 @@
 					"children": [
 						{
 							"type": "minecraft:item",
-							"name": "cauldronfix:cauldron_with_obsidian",
-							"conditions": [
-								{
-									"condition": "minecraft:match_tool",
-									"predicate": {
-										"predicates": {
-											"minecraft:enchantments": [
-												{
-													"enchantments": "minecraft:silk_touch",
-													"levels": {
-														"min": 1
-													}
-												}
-											]
+							"name": "minecraft:obsidian"
+						},
+						{
+							"type": "minecraft:item",
+							"name": "minecraft:cauldron"
+						}
+					],
+					"conditions": [
+						{
+							"condition": "minecraft:match_tool",
+							"predicate": {
+								"predicates": {
+									"minecraft:enchantments": [
+										{
+											"enchantments": "minecraft:silk_touch"
 										}
-									}
+									]
 								}
-							]
-						},
-						{
-							"type": "minecraft:item",
-							"name": "minecraft:obsidian",
-							"conditions": [
-								{
-									"condition": "minecraft:survives_explosion"
-								}
-							]
-						},
-						{
-							"type": "minecraft:item",
-							"name": "minecraft:iron_ingot",
-							"functions": [
-								{
-									"function": "minecraft:set_count",
-									"count": {
-										"min": 2,
-										"max": 5
-									}
-								}
-							]
+							}
 						}
 					]
+				},
+				{
+					"type": "minecraft:item",
+					"name": "cauldronfix:cauldron_with_obsidian"
 				}
 			]
 		}

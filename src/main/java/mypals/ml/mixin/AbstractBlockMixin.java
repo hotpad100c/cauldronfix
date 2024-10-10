@@ -1,5 +1,6 @@
 package mypals.ml.mixin;
 
+import com.llamalad7.mixinextras.sugar.Cancellable;
 import mypals.ml.CauldronBlockWatcher;
 import mypals.ml.CauldronFix;
 import net.minecraft.block.*;
@@ -16,7 +17,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class AbstractBlockMixin {
 
 	@Inject( at = @At("HEAD"), method = "neighborUpdate")
-	private void mixinNeighborUpdate(BlockState state, World world, BlockPos pos, Block sourceBlock, BlockPos sourcePos, boolean notify, CallbackInfo ci) {
+    private void mixinNeighborUpdate(BlockState state, World world, BlockPos pos, Block sourceBlock, BlockPos sourcePos, boolean notify, CallbackInfo ci) {
 		CauldronBlockWatcher.cauldronBlockCheck(world, pos);
 	}
 

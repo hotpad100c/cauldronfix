@@ -4,7 +4,8 @@
 	"compatibilityLevel": "JAVA_21",
 	"mixins": [
 		"AbstractBlockMixin",
-		"AbstractCauldronBlockMixin"
+		"AbstractCauldronBlockMixin",
+		"ItemDispenserBehaviorMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

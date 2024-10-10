@@ -19,7 +19,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(AbstractCauldronBlock.class)
-@Debug(export=true)
 public abstract class AbstractCauldronBlockMixin {
 
 	@Inject( at = @At("HEAD"), method = "onUseWithItem")

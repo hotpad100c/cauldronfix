@@ -10,7 +10,16 @@
 					"children": [
 						{
 							"type": "minecraft:item",
-							"name": "minecraft:stone"
+							"name": "minecraft:gravel",
+							"functions": [
+								{
+									"function": "minecraft:set_count",
+									"count": {
+										"min": 2,
+										"max": 3
+									}
+								}
+							]
 						},
 						{
 							"type": "minecraft:item",
@@ -34,10 +43,10 @@
 				},
 				{
 					"type": "minecraft:item",
-					"name": "cauldronfix:cauldron_with_cobble_stone"
+					"name": "cauldronfix:cauldron_with_gravel"
 				}
 			]
 		}
 	],
-	"random_sequence": "cauldronfix:block/cauldron_with_stone"
+	"random_sequence": "cauldronfix:block/cauldron_with_gravel"
 }

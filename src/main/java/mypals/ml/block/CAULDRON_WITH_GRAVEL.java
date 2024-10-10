@@ -2,15 +2,11 @@ package mypals.ml.block;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.ShapeContext;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.util.shape.VoxelShapes;
-import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 
-public class CAULDRON_WITH_STONE extends Block {
-    public CAULDRON_WITH_STONE(Settings settings) {
+public class CAULDRON_WITH_GRAVEL extends Block {
+    public CAULDRON_WITH_GRAVEL(Settings settings) {
         super(settings);
     }
     /*@Override
@@ -37,7 +33,7 @@ public class CAULDRON_WITH_STONE extends Block {
         return true;
     }
     @Override
-    protected int getComparatorOutput(BlockState state, World world, BlockPos pos) {
-        return 15;
+    public int getComparatorOutput(BlockState state, World world, BlockPos pos) {
+        return 3;
     }
 }

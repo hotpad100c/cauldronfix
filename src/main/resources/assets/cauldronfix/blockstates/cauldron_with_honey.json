@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "level=1": {
+      "model": "cauldronfix:block/cauldron_with_honey_level1"
+    },
+    "level=2": {
+      "model": "cauldronfix:block/cauldron_with_honey_level2"
+    },
+    "level=3": {
+      "model": "cauldronfix:block/cauldron_with_honey_level3"
+    }
+  }
+}

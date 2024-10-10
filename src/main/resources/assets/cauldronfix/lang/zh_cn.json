@@ -3,5 +3,9 @@
   "block.cauldronfix.cauldron_with_obsidian": "一整炼药锅的黑曜石",
   "block.cauldronfix.cauldron_with_stone": "一整炼药锅的石头",
   "block.cauldronfix.cauldron_with_cobble_stone": "一整炼药锅的圆石",
-  "block.cauldronfix.cauldron_with_some_cobble_stones": "半炼药锅的圆石"
+  "block.cauldronfix.cauldron_with_some_cobble_stones": "半炼药锅的圆石",
+  "block.cauldronfix.cauldron_with_gravel": "一整炼药锅的沙砾",
+  "block.cauldronfix.cauldron_with_dragons_breath": "龙息炼药锅",
+  "block.cauldronfix.cauldron_with_honey": "蜂蜜炼药锅",
+  "block.cauldronfix.cauldron_with_milk": "牛奶炼药锅"
 }
