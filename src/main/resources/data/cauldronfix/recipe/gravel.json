@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "cauldronfix:cauldron_with_gravel"
+    }
+  ],
+  "result": {
+    "id": "minecraft:gravel",
+    "count": 2
+  }
+}

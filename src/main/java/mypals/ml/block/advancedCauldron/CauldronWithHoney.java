@@ -1,41 +1,38 @@
 package mypals.ml.block.advancedCauldron;
 
-import com.mojang.datafixers.kinds.Applicative;
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
-import mypals.ml.CauldronFix;
+import net.minecraft.advancement.criterion.Criteria;
 import net.minecraft.block.*;
 import net.minecraft.block.cauldron.CauldronBehavior;
+import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.damage.*;
-import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
+import net.minecraft.entity.passive.BeeEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.Fluid;
-import net.minecraft.registry.DynamicRegistryManager;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKey;
+import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.IntProperty;
 import net.minecraft.state.property.Properties;
+import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldEvents;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.event.GameEvent;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.Optional;
-import java.util.stream.Stream;
+import java.util.List;
 
-public class CAULDRON_WITH_HONEY extends LeveledCauldronBlock {
+public class CauldronWithHoney extends LeveledCauldronBlock {
 
     public static final IntProperty LEVEL = Properties.LEVEL_3;
 
-    public CAULDRON_WITH_HONEY(Biome.Precipitation precipitation, CauldronBehavior.CauldronBehaviorMap behaviorMap, Settings settings, Biome.Precipitation precipitation1) {
+    public CauldronWithHoney(Biome.Precipitation precipitation, CauldronBehavior.CauldronBehaviorMap behaviorMap, Settings settings, Biome.Precipitation precipitation1) {
         super(precipitation, behaviorMap, settings);
         this.setDefaultState((this.stateManager.getDefaultState()).with(LEVEL, 1));
     }
@@ -63,6 +60,7 @@ public class CAULDRON_WITH_HONEY extends LeveledCauldronBlock {
     }
 
 
+
     @Override
     protected int getComparatorOutput(BlockState state, World world, BlockPos pos) {
         return state.get(LEVEL);
@@ -82,5 +80,29 @@ public class CAULDRON_WITH_HONEY extends LeveledCauldronBlock {
         world.setBlockState(pos, blockState);
         world.emitGameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Emitter.of(blockState));
         world.syncWorldEvent(WorldEvents.POINTED_DRIPSTONE_DRIPS_WATER_INTO_CAULDRON, pos, 0);
+    }
+    @Override
+    public void afterBreak(World world, PlayerEntity player, BlockPos pos, BlockState state, @Nullable BlockEntity blockEntity, ItemStack tool) {
+        if(!player.isCreative() && !player.isSpectator()) {
+            this.angerNearbyBees(world, pos);
+            Criteria.BEE_NEST_DESTROYED.trigger((ServerPlayerEntity) player, state, tool, 0);
+        }
+        world.updateComparators(pos, this);
+    }
+
+    private void angerNearbyBees(World world, BlockPos pos) {
+        Box box = new Box(pos).expand(8.0, 6.0, 8.0);
+        List<BeeEntity> list = world.getNonSpectatingEntities(BeeEntity.class, box);
+        if (!list.isEmpty()) {
+            List<PlayerEntity> list2 = world.getNonSpectatingEntities(PlayerEntity.class, box);
+            if (list2.isEmpty()) {
+                return;
+            }
+            for (BeeEntity beeEntity : list) {
+                if (beeEntity.getTarget() != null) continue;
+                PlayerEntity playerEntity = Util.getRandom(list2, world.random);
+                beeEntity.setTarget(playerEntity);
+            }
+        }
     }
 }

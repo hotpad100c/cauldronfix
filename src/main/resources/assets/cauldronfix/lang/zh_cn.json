@@ -1,11 +1,12 @@
 {
   "itemGroup.cauldron_fix": "炼药锅修复",
-  "block.cauldronfix.cauldron_with_obsidian": "一整炼药锅的黑曜石",
-  "block.cauldronfix.cauldron_with_stone": "一整炼药锅的石头",
-  "block.cauldronfix.cauldron_with_cobble_stone": "一整炼药锅的圆石",
-  "block.cauldronfix.cauldron_with_some_cobble_stones": "半炼药锅的圆石",
-  "block.cauldronfix.cauldron_with_gravel": "一整炼药锅的沙砾",
+  "block.cauldronfix.cauldron_with_obsidian": "装了黑曜石的炼药锅",
+  "block.cauldronfix.cauldron_with_stone": "装了石头的炼药锅",
+  "block.cauldronfix.cauldron_with_cobble_stone": "装了圆石的炼药锅",
+  "block.cauldronfix.cauldron_with_some_cobble_stones": "装了一半圆石炼的药锅",
+  "block.cauldronfix.cauldron_with_gravel": "装了沙砾的炼药锅",
   "block.cauldronfix.cauldron_with_dragons_breath": "龙息炼药锅",
   "block.cauldronfix.cauldron_with_honey": "蜂蜜炼药锅",
-  "block.cauldronfix.cauldron_with_milk": "牛奶炼药锅"
+  "block.cauldronfix.cauldron_with_milk": "牛奶炼药锅",
+  "block.cauldronfix.cauldron_with_ember": "装了余烬的炼药锅"
 }

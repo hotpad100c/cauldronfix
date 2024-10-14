@@ -29,8 +29,6 @@ public class CauldronFixDataGenerator implements DataGeneratorEntrypoint {
 	@Override
 	public void onInitializeDataGenerator(FabricDataGenerator generator) {
 		FabricDataGenerator.Pack pack = generator.createPack();
-
-		//pack.addProvider(BlockLootTables::new);
 	}
 /*
 	private static class BlockLootTables extends FabricBlockLootTableProvider {

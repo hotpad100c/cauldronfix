@@ -3,6 +3,7 @@ package mypals.ml.item;
 import mypals.ml.block.ModBlocks;
 import mypals.ml.CauldronFix;
 import net.minecraft.block.Blocks;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -20,6 +21,7 @@ public class ModItemGroups {
                         entries.add(ModBlocks.CAULDRON_WITH_OBSIDIAN);
                         entries.add(ModBlocks.CAULDRON_WITH_STONE);
                         entries.add(ModBlocks.CAULDRON_WITH_HALF_COBBLE_STONE);
+                        entries.add(ModBlocks.CAULDRON_WITH_EMBER);
                         entries.add(ModBlocks.CAULDRON_WITH_COBBLE_STONE);
                         entries.add(ModBlocks.CAULDRON_WITH_GRAVEL);
                         entries.add(ModBlocks.CAULDRON_WITH_DRAGONS_BREATH);

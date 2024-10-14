@@ -1,15 +1,18 @@
 package mypals.ml;
 
 import mypals.ml.block.ModBlocks;
-import mypals.ml.block.advancedCauldron.CAULDRON_WITH_DRAGONS_BREATH;
+import mypals.ml.block.advancedCauldron.CauldronWithDragonsBreath;
 import net.minecraft.block.*;
+import net.minecraft.entity.AreaEffectCloudEntity;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.particle.ParticleTypes;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.Hand;
@@ -17,10 +20,7 @@ import net.minecraft.util.ItemActionResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.registry.tag.FluidTags;
 import net.minecraft.world.World;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-
-import java.util.Collection;
 
 public class CauldronBlockWatcher {
 
@@ -29,8 +29,6 @@ public class CauldronBlockWatcher {
         if (!world.isClient()) {
             BlockState posUp = world.getBlockState(blockPos.up());
             BlockState pos = world.getBlockState(blockPos);
-
-            //checkForCustomCauldrons(world, blockPos, item, player, hand, cir);
 
             if (item.getItem() == Items.LAVA_BUCKET &&
                     (
@@ -42,8 +40,7 @@ public class CauldronBlockWatcher {
                 world.setBlockState(blockPos, ModBlocks.CAULDRON_WITH_OBSIDIAN.getDefaultState(), Block.NOTIFY_ALL);
                 world.addParticle(ParticleTypes.LAVA, blockPos.getX(), blockPos.up().getY(), blockPos.getZ(), 0.0, 0.5, 0.0);
                 world.playSound(null, blockPos, SoundEvents.BLOCK_LAVA_EXTINGUISH, SoundCategory.BLOCKS, 1f, 1f);
-                //replaceItemOnHand(player,hand, new ItemStack(Items.BUCKET));
-                //cir.cancel();
+                replaceItemOnHand(player,hand, new ItemStack(Items.BUCKET));
                 cir.setReturnValue(ItemActionResult.success(world.isClient()));
             } else if (item.getItem() == Items.WATER_BUCKET && (
                     (
@@ -54,8 +51,7 @@ public class CauldronBlockWatcher {
                 world.addParticle(ParticleTypes.SMOKE, blockPos.getX(), blockPos.up().getY(), blockPos.getZ(), 0.0, 0.5, 0.0);
                 world.setBlockState(blockPos, ModBlocks.CAULDRON_WITH_STONE.getDefaultState(), Block.NOTIFY_ALL);
                 world.playSound(null, blockPos, SoundEvents.BLOCK_LAVA_EXTINGUISH, SoundCategory.BLOCKS, 1f, 1f);
-                //replaceItemOnHand(player,hand, new ItemStack(Items.BUCKET));
-                //cir.cancel();
+                replaceItemOnHand(player,hand, new ItemStack(Items.BUCKET));
                 cir.setReturnValue(ItemActionResult.success(world.isClient()));
             } else if (item.getItem() == Items.POWDER_SNOW_BUCKET && (
                     (
@@ -67,8 +63,7 @@ public class CauldronBlockWatcher {
                 world.addParticle(ParticleTypes.BUBBLE_COLUMN_UP, blockPos.getX(), blockPos.up().getY(), blockPos.getZ(), 0.0, 0.0, 0.0);
                 world.playSound(null, blockPos, SoundEvents.ENTITY_PLAYER_SPLASH, SoundCategory.BLOCKS, 1f, 1f);
                 cauldronBlockCheck(world, blockPos);
-                //replaceItemOnHand(player,hand, new ItemStack(Items.BUCKET));
-                //cir.cancel();
+                replaceItemOnHand(player,hand, new ItemStack(Items.BUCKET));
                 cir.setReturnValue(ItemActionResult.success(world.isClient()));
             }
         }
@@ -131,6 +126,67 @@ public class CauldronBlockWatcher {
                 world.playSound(null, blockPos, SoundEvents.BLOCK_POWDER_SNOW_BREAK, SoundCategory.BLOCKS, 1f, 1f);
                 cauldronBlockCheck(world, blockPos);
             }
+            //Dragon's breath
+            else if(isLavaAndCauldronInteractionSimple(ModBlocks.CAULDRON_WITH_DRAGONS_BREATH,pos,posUp,posDown)){
+                world.createExplosion(null,blockPos.up().getX(),blockPos.up().getY(),blockPos.up().getZ(), 4, World.ExplosionSourceType.BLOCK);
+                world.setBlockState(blockPos, Blocks.LAVA_CAULDRON.getDefaultState(), Block.NOTIFY_ALL);
+            }
+            else if(isWaterAndCauldronInteractionSimple(ModBlocks.CAULDRON_WITH_DRAGONS_BREATH,pos,posUp,posDown)){
+                AreaEffectCloudEntity areaEffectCloudEntity = new AreaEffectCloudEntity(world, blockPos.up().toBottomCenterPos().getX(), blockPos.up().toBottomCenterPos().getY(), blockPos.up().toBottomCenterPos().getZ());
+
+                areaEffectCloudEntity.setParticleType(ParticleTypes.DRAGON_BREATH);
+                areaEffectCloudEntity.setDuration(100);
+                areaEffectCloudEntity.setRadius(1);
+                areaEffectCloudEntity.setRadiusGrowth((7.0f - areaEffectCloudEntity.getRadius()) / (float) areaEffectCloudEntity.getDuration());
+                areaEffectCloudEntity.addEffect(new StatusEffectInstance(StatusEffects.INSTANT_DAMAGE, 1, 1){
+                        @Override public void onEntityDamage(LivingEntity livingEntity, DamageSource source, float amount){
+                            livingEntity.damage(world.getDamageSources().dragonBreath(),amount);
+                        }
+                });
+                world.spawnEntity(areaEffectCloudEntity);
+                world.playSound(null, blockPos, SoundEvents.ITEM_BOTTLE_FILL_DRAGONBREATH, SoundCategory.BLOCKS, 1f, 1f);
+
+
+                BlockState cauldronBlockState = Blocks.WATER_CAULDRON.getDefaultState().with(Properties.LEVEL_3, 3);
+                world.setBlockState(blockPos, cauldronBlockState, Block.NOTIFY_ALL);
+            }//Empty cauldron
+            else if (isLavaAndCauldronInteractionSimple(Blocks.CAULDRON, pos,posUp,posDown)) {
+                Thread scanThread = new Thread(() -> {
+                    BlockPos sourcePos = FluidTracker.findLavaFluidSource(world, blockPos.up());
+
+                    if (sourcePos != null) {
+                        world.playSound(null, blockPos, SoundEvents.ITEM_BUCKET_FILL_LAVA, SoundCategory.BLOCKS, 1f, 1f);
+                        world.setBlockState(FluidTracker.findLavaFluidSource(world,blockPos.up()), Blocks.AIR.getDefaultState());
+                        world.setBlockState(blockPos, Blocks.LAVA_CAULDRON.getDefaultState(), Block.NOTIFY_ALL);
+                    } else {
+                        System.out.println("No water source found.");
+                        BlockPos sourcePos2 = FluidTracker.findLavaFluidSource(world, blockPos);
+                        if (sourcePos2 != null) {
+                            world.playSound(null, blockPos, SoundEvents.ITEM_BUCKET_FILL_LAVA, SoundCategory.BLOCKS, 1f, 1f);
+                            world.setBlockState(FluidTracker.findLavaFluidSource(world,blockPos.up()), Blocks.AIR.getDefaultState());
+                            world.setBlockState(blockPos, Blocks.LAVA_CAULDRON.getDefaultState(), Block.NOTIFY_ALL);
+                        }else{
+                            System.out.println("No water source found.");
+                        }
+                    }
+                });
+                scanThread.start();
+            } else if (isWaterAndCauldronInteractionSimple(Blocks.CAULDRON, pos,posUp,posDown)) {
+                world.playSound(null, blockPos, SoundEvents.BLOCK_WART_BLOCK_PLACE, SoundCategory.BLOCKS, 1f, 1f);
+                world.setBlockState(blockPos, Blocks.WATER_CAULDRON.getDefaultState().with(Properties.LEVEL_3,3), Block.NOTIFY_ALL);
+            }
+            //milk cauldron & honey cauldron
+            else if (isLavaAndCauldronInteractionSimple(ModBlocks.CAULDRON_WITH_MILK, pos,posUp,posDown) || isLavaAndCauldronInteractionSimple(ModBlocks.CAULDRON_WITH_HONEY, pos,posUp,posDown)) {
+                world.playSound(null, blockPos, SoundEvents.BLOCK_WART_BLOCK_PLACE, SoundCategory.BLOCKS, 1f, 1f);
+                world.setBlockState(blockPos, ModBlocks.CAULDRON_WITH_EMBER.getDefaultState(), Block.NOTIFY_ALL);
+                cauldronBlockCheck(world,blockPos);
+            }
+            //ember cauldron
+            else if (isWaterAndCauldronInteractionSimple(ModBlocks.CAULDRON_WITH_EMBER, pos,posUp,posDown)) {
+                world.playSound(null, blockPos, SoundEvents.BLOCK_WART_BLOCK_PLACE, SoundCategory.BLOCKS, 1f, 1f);
+                world.setBlockState(blockPos, ModBlocks.CAULDRON_WITH_HALF_COBBLE_STONE.getDefaultState(), Block.NOTIFY_ALL);
+                cauldronBlockCheck(world,blockPos);
+            }
         }
 
     }
@@ -167,18 +223,31 @@ public class CauldronBlockWatcher {
         return 0;
     }
 
-    // 判断锅是否满
+    private static boolean isLavaAndDragonsBreathInteraction(BlockState pos, BlockState posUp, BlockState posDown) {
+        return (pos.getBlock().equals(ModBlocks.CAULDRON_WITH_DRAGONS_BREATH) && isLavaBlock(posUp)) ||
+                (posDown.getBlock().equals(ModBlocks.CAULDRON_WITH_DRAGONS_BREATH) && isLavaBlock(pos));
+    }
+    private static boolean isLavaAndCauldronInteractionSimple(Block target,BlockState pos, BlockState posUp, BlockState posDown) {
+        return (pos.getBlock().equals(target) && isLavaBlock(posUp)) ||
+                (posDown.getBlock().equals(target) && isLavaBlock(pos));
+    }
+    private static boolean isWaterAndCauldronInteractionSimple(Block target,BlockState pos, BlockState posUp, BlockState posDown) {
+        return (pos.getBlock().equals(target) && isWaterBlock(posUp)) ||
+                (posDown.getBlock().equals(target) && isWaterBlock(pos));
+    }
+
+
+
     private static Integer getCauldronLevel(BlockState pos) {
 
         return pos.get(Properties.LEVEL_3);
     }
 
-    // 判断是否为水方块
     private static boolean isWaterBlock(BlockState state) {
         return state.equals(Blocks.WATER.getDefaultState()) || state.getFluidState().isIn(FluidTags.WATER);
     }
 
-    // 判断是否为熔岩方块
+
     private static boolean isLavaBlock(BlockState state) {
         return state.equals(Blocks.LAVA.getDefaultState()) || state.getFluidState().isIn(FluidTags.LAVA);
     }
