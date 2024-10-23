@@ -7,8 +7,10 @@ import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.client.gui.screen.SplashOverlay;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.Equipment;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.ShovelItem;
@@ -26,7 +28,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Random;
 
-public class CauldronWithGravel extends Block {
+public class CauldronWithGravel extends Block{
     public CauldronWithGravel(Settings settings) {
         super(settings);
     }

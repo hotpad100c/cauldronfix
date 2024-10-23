@@ -1,13 +1,22 @@
 {
-	"required": true,
-	"package": "mypals.ml.mixin",
-	"compatibilityLevel": "JAVA_21",
-	"mixins": [
-		"AbstractBlockMixin",
-		"AbstractCauldronBlockMixin",
-		"ItemDispenserBehaviorMixin"
-	],
-	"injectors": {
-		"defaultRequire": 1
-	}
+  "required": true,
+  "package": "mypals.ml.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "AbstractBlockMixin",
+    "AbstractCauldronBlockMixin",
+    "CauldronBlockMixin",
+    "EndermanEntityMixin",
+    "FallingBlockEntityMixin",
+    "HopperBlockEntityAccessor",
+    "HopperBlockEntityMixin",
+    "ItemDispenserBehaviorMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "client": [
+    "BlockColorsMixin",
+    "InGameHudMixin"
+  ]
 }

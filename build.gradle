@@ -9,10 +9,12 @@ group = project.maven_group
 base {
 	archivesName = project.archives_base_name
 }
-tasks.withType(Copy) {
+tasks.withType(Copy).configureEach {
 	duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
-
+loom {
+	accessWidenerPath = file("src/main/resources/cauldronfix.accesswidener")
+}
 
 repositories {
 	// Add repositories to retrieve artifacts from in here.

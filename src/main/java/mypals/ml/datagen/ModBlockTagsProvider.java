@@ -25,8 +25,8 @@ public class ModBlockTagsProvider extends FabricTagProvider.BlockTagProvider {
         getOrCreateTagBuilder(BlockTags.NEEDS_DIAMOND_TOOL)
                 .add(ModBlocks.CAULDRON_WITH_OBSIDIAN);
         getOrCreateTagBuilder(BlockTags.CAULDRONS)
-                .add(ModBlocks.CAULDRON_WITH_MILK)
-                .add(ModBlocks.CAULDRON_WITH_HONEY)
-                .add(ModBlocks.CAULDRON_WITH_DRAGONS_BREATH);
+                .add(ModBlocks.MILK_CAULDRON)
+                .add(ModBlocks.HONEY_CAULDRON)
+                .add(ModBlocks.DRAGONS_BREATH_CAULDRON);
     }
 }

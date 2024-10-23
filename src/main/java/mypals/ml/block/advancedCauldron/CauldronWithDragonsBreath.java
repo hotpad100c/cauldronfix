@@ -22,15 +22,10 @@ import net.minecraft.world.event.GameEvent;
 import net.minecraft.world.explosion.Explosion;
 
 public class CauldronWithDragonsBreath extends LeveledCauldronBlock {
-    public static final int MIN_LEVEL = 1;
-    public static final int MAX_LEVEL = 3;
     public static final IntProperty LEVEL = Properties.LEVEL_3;
-    private static final int BASE_FLUID_HEIGHT = 6;
-    private static final double FLUID_HEIGHT_PER_LEVEL = 3.0;
-
     public CauldronWithDragonsBreath(Biome.Precipitation precipitation, CauldronBehavior.CauldronBehaviorMap behaviorMap, Settings settings, Biome.Precipitation precipitation1) {
         super(precipitation, behaviorMap, settings);
-        this.setDefaultState((this.stateManager.getDefaultState()).with(LEVEL, 1));
+        this.setDefaultState((this.stateManager.getDefaultState()));
     }
     @Override
     public BlockState onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player) {

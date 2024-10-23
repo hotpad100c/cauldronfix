@@ -3,16 +3,12 @@ package mypals.ml.item;
 import mypals.ml.block.ModBlocks;
 import mypals.ml.CauldronFix;
 import net.minecraft.block.Blocks;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
-
-import static mypals.ml.block.ModBlocks.CAULDRON_WITH_GRAVEL;
 
 public class ModItemGroups {
     public static final ItemGroup CAULDRON_FIX_GROUP = Registry.register(Registries.ITEM_GROUP, Identifier.of(CauldronFix.MOD_ID, "retutorial_group"),
@@ -24,9 +20,10 @@ public class ModItemGroups {
                         entries.add(ModBlocks.CAULDRON_WITH_EMBER);
                         entries.add(ModBlocks.CAULDRON_WITH_COBBLE_STONE);
                         entries.add(ModBlocks.CAULDRON_WITH_GRAVEL);
-                        entries.add(ModBlocks.CAULDRON_WITH_DRAGONS_BREATH);
-                        entries.add(ModBlocks.CAULDRON_WITH_HONEY);
-                        entries.add(ModBlocks.CAULDRON_WITH_MILK);
+                        entries.add(ModBlocks.DRAGONS_BREATH_CAULDRON);
+                        entries.add(ModBlocks.HONEY_CAULDRON);
+                        entries.add(ModBlocks.MILK_CAULDRON);
+                        entries.add(ModBlocks.BAD_OMEN_CAULDRON);
                         entries.add(Blocks.CAULDRON);
                     }).build());
     public static void registerModItemGroups() {

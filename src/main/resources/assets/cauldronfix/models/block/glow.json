@@ -1,0 +1,24 @@
+{
+	"credit": "Made with Blockbench",
+	"ambientocclusion": false,
+	"texture_size": [64, 64],
+	"textures": {
+		"1": "cauldronfix:block/glow",
+		"particle": "cauldronfix:block/glow"
+	},
+	"elements": [
+		{
+			"name": "cube_outline",
+			"from": [16.2, 16.2, 16.2],
+			"to": [-0.2, -0.2, -0.2],
+			"shade": false,
+			"faces": {
+				"north": {"uv": [0, 0, 4, 4], "rotation": 180, "texture": "#1"},
+				"east": {"uv": [0, 0, 4, 4], "rotation": 180, "texture": "#1"},
+				"south": {"uv": [0, 0, 4, 4], "rotation": 180, "texture": "#1"},
+				"west": {"uv": [0, 0, 4, 4], "rotation": 180, "texture": "#1"}
+			}
+		}
+	],
+	"display": {}
+}

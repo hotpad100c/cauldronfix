@@ -2,6 +2,7 @@
 	"schemaVersion": 1,
 	"id": "cauldronfix",
 	"version": "${version}",
+	"accessWidener": "cauldronfix.accesswidener",
 	"name": "CauldronFix",
 	"description": "Fixed cauldron for bugjump!",
 	"authors": [

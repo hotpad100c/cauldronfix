@@ -1,0 +1,51 @@
+{
+  "multipart": [
+    {
+      "when": {
+        "level": "1"
+      },
+      "apply": {
+        "model": "cauldronfix:block/cauldron_with_bad_omen_level1"
+      }
+    },
+    {
+      "when": {
+        "level": "2"
+      },
+      "apply": {
+        "model": "cauldronfix:block/cauldron_with_bad_omen_level2"
+      }
+    },
+    {
+      "when": {
+        "level": "3"
+      },
+      "apply": [
+        {
+          "model": "cauldronfix:block/cauldron_with_bad_omen_full"
+        }
+      ]
+    },
+    {
+      "when": {
+        "OR": [
+          {
+            "level": "1"
+          },
+          {
+            "level": "2"
+          },
+          {
+            "level": "3"
+          }
+        ]
+      },
+      "apply": [
+        {
+          "model": "cauldronfix:block/bad_omen_outline",
+          "weight": 1
+        }
+      ]
+    }
+  ]
+}

@@ -34,7 +34,7 @@ public class CauldronWithHoney extends LeveledCauldronBlock {
 
     public CauldronWithHoney(Biome.Precipitation precipitation, CauldronBehavior.CauldronBehaviorMap behaviorMap, Settings settings, Biome.Precipitation precipitation1) {
         super(precipitation, behaviorMap, settings);
-        this.setDefaultState((this.stateManager.getDefaultState()).with(LEVEL, 1));
+        this.setDefaultState((this.stateManager.getDefaultState()));
     }
     @Override
     protected void onEntityCollision(BlockState state, World world, BlockPos pos, Entity entity) {
@@ -53,9 +53,9 @@ public class CauldronWithHoney extends LeveledCauldronBlock {
             }
 
 
+            Vec3d vec3d = new Vec3d(0.25, 0.25, 0.25);
+            entity.slowMovement(state, vec3d);
 
-            Vec3d vec3d = entity.getVelocity();
-            entity.setVelocity(new Vec3d(vec3d.x, -0.05, vec3d.z));
         }
     }
 

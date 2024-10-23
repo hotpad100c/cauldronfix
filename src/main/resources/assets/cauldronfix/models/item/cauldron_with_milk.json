@@ -5,7 +5,7 @@
     "4": "minecraft:block/cauldron_top",
     "5": "minecraft:block/cauldron_side",
     "6": "minecraft:block/cauldron_bottom",
-    "7": "minecraft:block/white_concrete_powder",
+    "7": "minecraft:block/white_concrete",
     "particle": "minecraft:block/obsidian"
   },
   "elements": [
@@ -187,7 +187,7 @@
   },
   "groups": [
     {
-      "name": "cauldron_with_stone",
+      "name": "cauldron_with_milk",
       "origin": [8, 8, 8],
       "color": 0,
       "children": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]

@@ -3,17 +3,26 @@ package mypals.ml.dispenserInteractionManage;
 import mypals.ml.CauldronBlockWatcher;
 import mypals.ml.CauldronFix;
 import mypals.ml.block.ModBlocks;
+import mypals.ml.block.advancedCauldron.coloredCauldrons.ColoredCauldron;
+import mypals.ml.block.advancedCauldron.coloredCauldrons.ColoredCauldronBlockEntity;
 import net.minecraft.block.*;
+import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.DispenserBlockEntity;
 import net.minecraft.component.type.PotionContentsComponent;
 import net.minecraft.entity.ItemEntity;
+import net.minecraft.entity.boss.BossBar;
 import net.minecraft.item.*;
 import net.minecraft.potion.Potions;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvents;
+import net.minecraft.state.property.Properties;
 import net.minecraft.util.math.BlockPointer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
+import java.awt.*;
 
 public class DispenserInteraction {
     public static void interact(ItemStack stack, BlockPointer pointer, CallbackInfoReturnable<ItemStack> cir){
@@ -21,15 +30,15 @@ public class DispenserInteraction {
 
         if (blockIsDispenser) {
             boolean itemIsBucket = stack.getItem() instanceof FluidModificationItem || stack.getItem() instanceof MilkBucketItem;
-            boolean itemIsPotion = stack.getItem() instanceof PotionItem || stack.getItem() instanceof HoneyBottleItem || stack.getItem().equals(Items.DRAGON_BREATH);
+            boolean itemIsPotion = stack.getItem() instanceof PotionItem || stack.getItem() instanceof HoneyBottleItem || stack.getItem() instanceof OminousBottleItem || stack.getItem().equals(Items.DRAGON_BREATH);
             boolean itemIsBottle = stack.getItem() instanceof GlassBottleItem;
-
+            boolean itemIsDye = stack.getItem() instanceof DyeItem || stack.getItem() instanceof GlowInkSacItem;
             if (itemIsBucket) {
                 interactionWithBucket(stack, pointer, cir);
             }else if(itemIsPotion || itemIsBottle) {
                 interactionWithPotion(stack, pointer, cir);
-            }else{
-
+            } else if (itemIsDye) {
+                interactionWithDye(stack,pointer,cir);
             }
         }
     }
@@ -63,27 +72,36 @@ public class DispenserInteraction {
 
             try {
                 int level = 0;
+                int light_level = 0;
                 Block b = pointer.world().getBlockState(targetPos).getBlock();
-                if(b.equals(Blocks.WATER_CAULDRON) || b.equals(ModBlocks.CAULDRON_WITH_HONEY) || b.equals(ModBlocks.CAULDRON_WITH_DRAGONS_BREATH))
+                if(b.equals(ModBlocks.COLORED_CAULDRON) || b.equals(Blocks.WATER_CAULDRON) || b.equals(ModBlocks.HONEY_CAULDRON) || b.equals(ModBlocks.DRAGONS_BREATH_CAULDRON)|| b.equals(ModBlocks.BAD_OMEN_CAULDRON))
                 {
                     level = pointer.world().getBlockState(targetPos).get(LeveledCauldronBlock.LEVEL);
                 }
                 if(level < 3) {
                     if((stack.getItem() == PotionContentsComponent.createStack(Items.POTION, Potions.WATER).getItem() && (
-                                    b.equals(Blocks.WATER_CAULDRON) || b.equals(Blocks.CAULDRON)
+                                    b.equals(Blocks.WATER_CAULDRON) || b.equals(Blocks.CAULDRON) || b.equals(ModBlocks.COLORED_CAULDRON)
                             )) || (
                                     stack.getItem() == Items.DRAGON_BREATH && (
-                                            b.equals(ModBlocks.CAULDRON_WITH_DRAGONS_BREATH) || b.equals(Blocks.CAULDRON)
+                                            b.equals(ModBlocks.DRAGONS_BREATH_CAULDRON) || b.equals(Blocks.CAULDRON)
                                     )) || (
                                             stack.getItem() == Items.HONEY_BOTTLE && (
-                                            b.equals(ModBlocks.CAULDRON_WITH_HONEY) || b.equals(Blocks.CAULDRON)
-                                            ))
+                                            b.equals(ModBlocks.HONEY_CAULDRON) || b.equals(Blocks.CAULDRON)
+                                            )) || (
+                                                stack.getItem() == Items.OMINOUS_BOTTLE && (
+                                                        b.equals(ModBlocks.BAD_OMEN_CAULDRON) || b.equals(Blocks.CAULDRON)
+                                                ))
                     ) {
                         cauldronBlockFilledState = cauldronBlockFilledState.with(LeveledCauldronBlock.LEVEL, level + 1);
+                        if(b.equals(ModBlocks.COLORED_CAULDRON))
+                        {
+                            light_level = pointer.world().getBlockState(targetPos).get(ColoredCauldron.LIGHT_LEVEL);
+                            cauldronBlockFilledState = cauldronBlockFilledState.with(ColoredCauldron.LIGHT_LEVEL, light_level);
+                        }
                         stack.decrement(1);
                         pointer.world().setBlockState(targetPos, cauldronBlockFilledState);
 
-                        DispenserBlockEntity dispenser = (DispenserBlockEntity) pointer.blockEntity();
+                        DispenserBlockEntity dispenser = pointer.blockEntity();
                         ItemStack emptyBottleStack = new ItemStack(Items.GLASS_BOTTLE);
                         if (stack.isEmpty()) {
                             // 如果当前堆栈已空，将空瓶子放在当前槽位
@@ -112,10 +130,12 @@ public class DispenserInteraction {
             Item filledPotionItem = CauldronInteractionMap.CAULDRON_TO_POTION_MAP.get(cauldron);
 
             BlockState cauldronBlockState = Blocks.WATER_CAULDRON.getDefaultState();
-            if(targetBlock.getBlock().equals(ModBlocks.CAULDRON_WITH_DRAGONS_BREATH))
-                cauldronBlockState = ModBlocks.CAULDRON_WITH_DRAGONS_BREATH.getDefaultState();
-            else if(targetBlock.getBlock().equals(ModBlocks.CAULDRON_WITH_HONEY))
-                cauldronBlockState = ModBlocks.CAULDRON_WITH_HONEY.getDefaultState();
+            if(targetBlock.getBlock().equals(ModBlocks.DRAGONS_BREATH_CAULDRON))
+                cauldronBlockState = ModBlocks.DRAGONS_BREATH_CAULDRON.getDefaultState();
+            else if(targetBlock.getBlock().equals(ModBlocks.HONEY_CAULDRON))
+                cauldronBlockState = ModBlocks.HONEY_CAULDRON.getDefaultState();
+            else if(targetBlock.getBlock().equals(ModBlocks.COLORED_CAULDRON))
+                cauldronBlockState = ModBlocks.COLORED_CAULDRON.getDefaultState().with(ColoredCauldron.LIGHT_LEVEL,targetBlock.get(ColoredCauldron.LIGHT_LEVEL));
 
             int level = targetBlock.get(LeveledCauldronBlock.LEVEL);
             try {
@@ -196,13 +216,65 @@ public class DispenserInteraction {
         BlockState targetBlock = pointer.world().getBlockState(targetPos);
 
         if (targetBlock.getBlock() instanceof AbstractCauldronBlock cauldron) {
-            if (stack.getItem() == Items.POTION || stack.getItem() == Items.DRAGON_BREATH || stack.getItem() == Items.HONEY_BOTTLE) {
+            if (stack.getItem() == Items.POTION || stack.getItem() == Items.DRAGON_BREATH || stack.getItem() == Items.OMINOUS_BOTTLE || stack.getItem() == Items.HONEY_BOTTLE) {
                 fillCauldronWithPotion(stack, pointer, targetPos, cir);
-            } else if (cauldron == Blocks.WATER_CAULDRON || cauldron == ModBlocks.CAULDRON_WITH_HONEY || cauldron == ModBlocks.CAULDRON_WITH_DRAGONS_BREATH) {
+            } else if (cauldron == ModBlocks.COLORED_CAULDRON || cauldron == Blocks.WATER_CAULDRON || cauldron == ModBlocks.HONEY_CAULDRON || cauldron == ModBlocks.DRAGONS_BREATH_CAULDRON || cauldron == ModBlocks.BAD_OMEN_CAULDRON) {
                 drainCauldronWithPotion((AbstractCauldronBlock)targetBlock.getBlock(), targetBlock, stack, pointer, targetPos, cir);
             }
         }
     }
+    private static void interactionWithDye(ItemStack stack, BlockPointer pointer, CallbackInfoReturnable<ItemStack> cir){
+        BlockPos targetPos = getTargetPos(pointer);
+        BlockState targetBlock = pointer.world().getBlockState(targetPos);
+
+        World world = pointer.world();
+        if (targetBlock.getBlock() instanceof ColoredCauldron) {
+            if (stack.getItem() instanceof DyeItem) {
+                if (!world.isClient) {
+                    BlockEntity blockEntity = world.getBlockEntity(targetPos);
+                    if(blockEntity instanceof ColoredCauldronBlockEntity coloredCauldronBlockEntity)
+                    {
+                        coloredCauldronBlockEntity.setColor(((DyeItem) stack.getItem()).getColor());
+                        coloredCauldronBlockEntity.toUpdatePacket();
+                        world.playSound(null,targetPos, SoundEvents.ITEM_DYE_USE, SoundCategory.PLAYERS,1,1);
+                        stack.decrement(1);
+                        world.updateListeners(targetPos, targetBlock, targetBlock, 0);
+                        CauldronFix.rebuildBlock(targetPos);
+                    }
+                    cir.setReturnValue(stack);
+                }
+            }else if (stack.getItem() instanceof GlowInkSacItem) {
+                if (!world.isClient) {
+                    int target_light = targetBlock.get(ColoredCauldron.LIGHT_LEVEL);
+                    if(target_light < 15)
+                    {
+                        target_light++;
+                        world.setBlockState(targetPos,targetBlock.with(ColoredCauldron.LIGHT_LEVEL,target_light));
+                        world.playSound(null,targetPos, SoundEvents.ITEM_DYE_USE, SoundCategory.PLAYERS,1,1);
+                        stack.decrement(1);
+                        world.updateListeners(targetPos, targetBlock, targetBlock, 0);
+                        CauldronFix.rebuildBlock(targetPos);
+                    }
+                    cir.setReturnValue(stack);
+
+                }
+            }
+        }else if(stack.getItem() instanceof DyeItem dyeItem && targetBlock.getBlock() == Blocks.WATER_CAULDRON) {
+            world.setBlockState(targetPos, ModBlocks.COLORED_CAULDRON.getDefaultState().with(Properties.LEVEL_3, targetBlock.get(Properties.LEVEL_3)));
+            BlockEntity blockEntity = world.getBlockEntity (targetPos);
+            if(blockEntity instanceof ColoredCauldronBlockEntity coloredCauldron) {
+                coloredCauldron.resetColor();
+
+                coloredCauldron.setColor(dyeItem.getColor());
+                coloredCauldron.toUpdatePacket();
+                CauldronFix.rebuildBlock(targetPos);
+                world.playSound(null, targetPos, SoundEvents.ITEM_DYE_USE, SoundCategory.BLOCKS, 1.0F, 1.0F);
+                stack.decrement(1);
+                cir.setReturnValue(stack);
+            }
+        }
+    }
+
     private static void interactionWithBucket(ItemStack stack, BlockPointer pointer, CallbackInfoReturnable<ItemStack> cir){
         BlockPos targetPos = getTargetPos(pointer);
         BlockState targetBlock = pointer.world().getBlockState(targetPos);
@@ -215,6 +287,7 @@ public class DispenserInteraction {
             }
         }
     }
+
     private static BlockPos getTargetPos(BlockPointer pointer) {
         Direction dir = pointer.state().get(DispenserBlock.FACING);
         return pointer.blockEntity().getPos().offset(dir);
