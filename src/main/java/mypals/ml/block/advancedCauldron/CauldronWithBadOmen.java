@@ -50,7 +50,16 @@ public class CauldronWithBadOmen extends LeveledCauldronBlock {
     }
     @Override
     protected void onEntityCollision(BlockState state, World world, BlockPos pos, Entity entity) {
+        if (!world.isClient) {
 
+            if (entity instanceof LivingEntity livingEntity && world.getDifficulty() != Difficulty.PEACEFUL) {
+                livingEntity.addStatusEffect(new StatusEffectInstance(StatusEffects.RAID_OMEN, 1, 1));
+                livingEntity.addStatusEffect(new StatusEffectInstance(StatusEffects.DARKNESS, 600, 4));
+                livingEntity.addStatusEffect(new StatusEffectInstance(StatusEffects.BLINDNESS, 600, 4));
+                livingEntity.addStatusEffect(new StatusEffectInstance(StatusEffects.WITHER, 600, 2));
+                livingEntity.addStatusEffect(new StatusEffectInstance(StatusEffects.WEAKNESS, 600, 1));
+            }
+        }
     }
 
     @Override
@@ -78,7 +87,6 @@ public class CauldronWithBadOmen extends LeveledCauldronBlock {
                     randomPlayer.addStatusEffect(new StatusEffectInstance(StatusEffects.RAID_OMEN, 1, 5));
                     randomPlayer.addStatusEffect(new StatusEffectInstance(StatusEffects.DARKNESS, 600, 4));
                     randomPlayer.addStatusEffect(new StatusEffectInstance(StatusEffects.BLINDNESS, 600, 4));
-                    randomPlayer.addStatusEffect(new StatusEffectInstance(StatusEffects.WITHER, 600, 1));
                     randomPlayer.addStatusEffect(new StatusEffectInstance(StatusEffects.WEAKNESS, 600, 1));
                     randomPlayer.setStartRaidPos(randomPlayer.getBlockPos());
                     RaidManager manager = world.getRaidManager();

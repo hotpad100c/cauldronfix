@@ -41,7 +41,7 @@ import java.util.function.ToIntFunction;
 public class ColoredCauldron extends LeveledCauldronBlock implements BlockEntityProvider{
     public static final IntProperty LEVEL = Properties.LEVEL_3;
     public static final IntProperty LIGHT_LEVEL = IntProperty.of("light_level", 0, 15);
-    public static final ToIntFunction<BlockState> STATE_TO_LUMINANCE  = (state) -> (Integer)state.get(LIGHT_LEVEL);
+    public static final ToIntFunction<BlockState> STATE_TO_LUMINANCE_1  = (state) -> (Integer)state.get(LIGHT_LEVEL);
 
     public ColoredCauldron(Biome.Precipitation precipitation, CauldronBehavior.CauldronBehaviorMap behaviorMap, Settings settings, Biome.Precipitation precipitation1) {
         super(precipitation, behaviorMap, settings);
@@ -104,7 +104,9 @@ public class ColoredCauldron extends LeveledCauldronBlock implements BlockEntity
         BlockEntity blockEntity = world.getBlockEntity(pos);
         assert blockEntity != null;
         blockEntity.toUpdatePacket();
+        //if (stack.isIn(ItemTags.DYEABLE) && blockEntity instanceof ColoredCauldronBlockEntity colorCauldron && colorCauldron.getCauldronColor() != -1) {
         if (stack.isIn(ItemTags.DYEABLE) && blockEntity instanceof ColoredCauldronBlockEntity colorCauldron && colorCauldron.getCauldronColor() != -1) {
+
             if (!world.isClient) {
                 player.incrementStat(Stats.USE_CAULDRON);
                 stack.set(DataComponentTypes.DYED_COLOR, new DyedColorComponent(colorCauldron.getCauldronColor(), true));

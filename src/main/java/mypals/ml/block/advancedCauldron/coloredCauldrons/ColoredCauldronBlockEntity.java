@@ -60,9 +60,9 @@ public class ColoredCauldronBlockEntity extends BlockEntity {
         newColor[2] = newBlue;
         if (!Arrays.equals(color, NULL_COLOR)) {
             var avgColor = new int[3];
-            avgColor[0] = (color[0] + newColor[0]) / 2;
-            avgColor[1] = (color[1] + newColor[1]) / 2;
-            avgColor[2] = (color[2] + newColor[2]) / 2;
+            avgColor[0] = (color[0] + newColor[0]) / 3;
+            avgColor[1] = (color[1] + newColor[1]) / 3;
+            avgColor[2] = (color[2] + newColor[2]) / 3;
 
             var avgMax = (Ints.max(color) + Ints.max(newColor)) / 2.0f;
 

@@ -4,6 +4,7 @@ import mypals.ml.block.ModBlockEntityTypes;
 import mypals.ml.block.ModBlocks;
 import mypals.ml.block.advancedCauldron.BehaciorMaps;
 import mypals.ml.block.advancedCauldron.coloredCauldrons.ColoredCauldronBlockEntity;
+import mypals.ml.block.advancedCauldron.potionCauldrons.PotionCauldronBlockEntity;
 import mypals.ml.item.ModItemGroups;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -200,6 +201,11 @@ public class CauldronFix implements ModInitializer {
 			int color = colorCauldron.getCauldronColor();
 			if(color != -1)
 				return colorCauldron.getCauldronColor();
+		}
+		if (blockEntity instanceof PotionCauldronBlockEntity potionCauldron) {
+			int color = potionCauldron.getCauldronColor();
+			if(color != -1)
+				return potionCauldron.getCauldronColor();
 		}
 		return BiomeColors.getWaterColor(world, pos);
 	}

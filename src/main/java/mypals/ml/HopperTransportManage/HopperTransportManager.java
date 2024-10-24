@@ -31,7 +31,8 @@ public class HopperTransportManager {
                         !(aboveBlockState.getBlock() == ModBlocks.HONEY_CAULDRON)&&
                                 !(aboveBlockState.getBlock() == ModBlocks.MILK_CAULDRON)&&
                                         !(aboveBlockState.getBlock() == ModBlocks.DRAGONS_BREATH_CAULDRON)&&
-                                                !(aboveBlockState.getBlock() == ModBlocks.COLORED_CAULDRON))
+                                                !(aboveBlockState.getBlock() == ModBlocks.COLORED_CAULDRON)&&
+                                                        !(aboveBlockState.getBlock() == ModBlocks.BAD_OMEN_CAULDRON))
 
          {return 0;}
         

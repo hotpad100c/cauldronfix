@@ -6,6 +6,7 @@ import mypals.ml.block.advancedCauldron.CauldronWithMilk;
 import mypals.ml.block.advancedCauldron.CauldronWithHoney;
 
 import mypals.ml.block.advancedCauldron.coloredCauldrons.ColoredCauldron;
+import mypals.ml.block.advancedCauldron.potionCauldrons.PotionCauldron;
 import net.minecraft.block.*;
 import net.minecraft.block.cauldron.CauldronBehavior;
 import net.minecraft.block.enums.NoteBlockInstrument;
@@ -18,7 +19,8 @@ import net.minecraft.util.Identifier;
 import net.minecraft.world.biome.Biome;
 
 import static mypals.ml.block.advancedCauldron.BehaciorMaps.*;
-import static mypals.ml.block.advancedCauldron.coloredCauldrons.ColoredCauldron.STATE_TO_LUMINANCE;
+import static mypals.ml.block.advancedCauldron.coloredCauldrons.ColoredCauldron.STATE_TO_LUMINANCE_1;
+import static mypals.ml.block.advancedCauldron.potionCauldrons.PotionCauldron.STATE_TO_LUMINANCE_2;
 
 public class ModBlocks {
     public static final Block CAULDRON_WITH_OBSIDIAN = registerBlocks("cauldron_with_obsidian",
@@ -54,8 +56,13 @@ public class ModBlocks {
     public static final Block COLORED_CAULDRON = registerBlocks("colored_cauldron",
             new ColoredCauldron(Biome.Precipitation.NONE, new CauldronBehavior.CauldronBehaviorMap("colored",COLORED_CAULDRON_BEHAVIOR),
                 AbstractBlock.Settings.create().strength(
-                        2.0F, 6.0F).requiresTool().luminance(STATE_TO_LUMINANCE).
+                        2.0F, 6.0F).requiresTool().luminance(STATE_TO_LUMINANCE_1).
                     nonOpaque(),Biome.Precipitation.NONE));
+    public static final Block POTION_CAULDRON = registerBlocks("cauldron_with_potions",
+            new PotionCauldron(Biome.Precipitation.NONE, new CauldronBehavior.CauldronBehaviorMap("potion",POTION_CAULDRON_BEHAVIOR),
+                    AbstractBlock.Settings.create().strength(
+                                    2.0F, 6.0F).requiresTool().luminance(STATE_TO_LUMINANCE_2).
+                            nonOpaque(),Biome.Precipitation.NONE));
     public static final Block BAD_OMEN_CAULDRON = registerBlocks("cauldron_with_bad_omen",
             new CauldronWithBadOmen(Biome.Precipitation.NONE, new CauldronBehavior.CauldronBehaviorMap("bad_omen",BAD_OMEN_CAULDRON_BEHAVIOR),
                     AbstractBlock.Settings.create().strength(

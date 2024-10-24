@@ -20,6 +20,10 @@ public class ModBlockEntityTypes {
             "colored_cauldron",
             BlockEntityType.Builder.create(ColoredCauldronBlockEntity::new, ModBlocks.COLORED_CAULDRON).build()
     );
+    public static final BlockEntityType<ColoredCauldronBlockEntity> POTION_CAULDRON_BLOCK_ENTITY = register(
+            "cauldron_with_potions",
+            BlockEntityType.Builder.create(ColoredCauldronBlockEntity::new, ModBlocks.POTION_CAULDRON).build()
+    );
 
     public static void registerBlockEntities() {
         CauldronFix.LOGGER.info("Registering BlockEntities");

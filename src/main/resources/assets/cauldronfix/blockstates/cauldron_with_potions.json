@@ -1,0 +1,54 @@
+{
+  "multipart": [
+    {
+      "when": {
+        "level": "1"
+      },
+      "apply": {
+        "model": "minecraft:block/water_cauldron_level1"
+      }
+    },
+    {
+      "when": {
+        "level": "2"
+      },
+      "apply": {
+        "model": "minecraft:block/water_cauldron_level2"
+      }
+    },
+    {
+      "when": {
+        "level": "3"
+      },
+      "apply": [
+        {
+          "model": "minecraft:block/water_cauldron_full"
+        }
+      ]
+    },
+    {
+      "when": {
+        "OR": [
+          {
+            "light_level": "12"
+          },
+          {
+            "light_level": "13"
+          },
+          {
+            "light_level": "14"
+          },
+          {
+            "light_level": "15"
+          }
+        ]
+      },
+      "apply": [
+        {
+          "model": "cauldronfix:block/glow",
+          "weight": 1
+        }
+      ]
+    }
+  ]
+}
