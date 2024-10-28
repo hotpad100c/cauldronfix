@@ -36,22 +36,22 @@ import java.util.Arrays;
 import static net.fabricmc.fabric.impl.registry.sync.RegistryMapSerializer.toNbt;
 
 public class ColoredCauldronBlockEntity extends BlockEntity {
-    private static final int[] NULL_COLOR = new int[] {-1, -1, -1};
+    private static final int[] NULL_COLOR = new int[]{-1, -1, -1};
     private int[] color = NULL_COLOR;
-    private int[] colorCorrect = NULL_COLOR;
+
     public ColoredCauldronBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntityTypes.COLORED_CAULDRON_BLOCK_ENTITY, pos, state);
+
     }
 
-    public void setColor(DyeColor dyeColor)
-    {
+    public void setColor(DyeColor dyeColor) {
         setColor(dyeColor.getMapColor().color);
     }
 
     public void setColor(int dyeColor) {
 
         int newRed = (dyeColor >> 16) & 0xFF;
-        int newGreen = (dyeColor>> 8) & 0xFF;
+        int newGreen = (dyeColor >> 8) & 0xFF;
         int newBlue = dyeColor & 0xFF;
 
         var newColor = new int[3];
@@ -80,13 +80,7 @@ public class ColoredCauldronBlockEntity extends BlockEntity {
     }
 
     public int getCauldronColor() {
-
-        if(!Arrays.equals(color,NULL_COLOR))
-        {
-            colorCorrect = color;
-        }
-        return (colorCorrect[0] << 16) + (colorCorrect[1] << 8) + colorCorrect[2];
-        //return !Arrays.equals(color, NULL_COLOR) ? (color[0] << 16) + (color[1] << 8) + color[2] : -1;
+        return !Arrays.equals(color, NULL_COLOR) ? (color[0] << 16) + (color[1] << 8) + color[2] : -1;
     }
 
     public void resetColor() {
@@ -96,7 +90,7 @@ public class ColoredCauldronBlockEntity extends BlockEntity {
 
     @Override
     public void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
-        super.writeNbt(nbt,registryLookup);
+        super.writeNbt(nbt, registryLookup);
         nbt.putIntArray("color", color);
     }
 
@@ -112,6 +106,7 @@ public class ColoredCauldronBlockEntity extends BlockEntity {
     public net.minecraft.network.packet.Packet<ClientPlayPacketListener> toUpdatePacket() {
         return BlockEntityUpdateS2CPacket.create(this);
     }
+
     @Override
     public NbtCompound toInitialChunkDataNbt(RegistryWrapper.WrapperLookup registryLookup) {
         return createNbt(registryLookup);

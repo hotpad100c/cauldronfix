@@ -2,6 +2,7 @@ package mypals.ml.block;
 
 import mypals.ml.CauldronFix;
 import mypals.ml.block.advancedCauldron.coloredCauldrons.ColoredCauldronBlockEntity;
+import mypals.ml.block.advancedCauldron.potionCauldrons.PotionCauldronBlockEntity;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntityType;
@@ -20,9 +21,9 @@ public class ModBlockEntityTypes {
             "colored_cauldron",
             BlockEntityType.Builder.create(ColoredCauldronBlockEntity::new, ModBlocks.COLORED_CAULDRON).build()
     );
-    public static final BlockEntityType<ColoredCauldronBlockEntity> POTION_CAULDRON_BLOCK_ENTITY = register(
+    public static final BlockEntityType<PotionCauldronBlockEntity> POTION_CAULDRON_BLOCK_ENTITY = register(
             "cauldron_with_potions",
-            BlockEntityType.Builder.create(ColoredCauldronBlockEntity::new, ModBlocks.POTION_CAULDRON).build()
+            BlockEntityType.Builder.create(PotionCauldronBlockEntity::new, ModBlocks.POTION_CAULDRON).build()
     );
 
     public static void registerBlockEntities() {

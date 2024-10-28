@@ -28,7 +28,6 @@ public class CauldronInteractionMap {
     }};
     public static final Map<Item, Block> POTION_TO_CAULDRON_MAP = new HashMap<>() {{
         put(PotionContentsComponent.createStack(Items.POTION, Potions.WATER).getItem(),Blocks.WATER_CAULDRON);
-        put(PotionContentsComponent.createStack(Items.POTION, Potions.WATER).getItem(),ModBlocks.COLORED_CAULDRON);
         put(Items.DRAGON_BREATH, ModBlocks.DRAGONS_BREATH_CAULDRON);
         put(Items.HONEY_BOTTLE, ModBlocks.HONEY_CAULDRON);
         put(Items.OMINOUS_BOTTLE, ModBlocks.BAD_OMEN_CAULDRON);

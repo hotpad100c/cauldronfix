@@ -6,6 +6,7 @@ import mypals.ml.CauldronFix;
 import mypals.ml.block.ModBlocks;
 import mypals.ml.block.advancedCauldron.coloredCauldrons.ColoredCauldron;
 import mypals.ml.block.advancedCauldron.coloredCauldrons.ColoredCauldronBlockEntity;
+import mypals.ml.block.advancedCauldron.potionCauldrons.PotionCauldron;
 import mypals.ml.block.advancedCauldron.potionCauldrons.PotionCauldronBlockEntity;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
@@ -17,6 +18,8 @@ import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.DyedColorComponent;
 import net.minecraft.component.type.PotionContentsComponent;
 import net.minecraft.entity.effect.StatusEffect;
+import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.item.*;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.Potions;
@@ -37,7 +40,9 @@ import net.minecraft.util.ItemActionResult;
 import net.minecraft.world.event.GameEvent;
 import net.minecraft.world.event.listener.GameEventListener;
 
+import java.util.ArrayList;
 import java.util.Map;
+import java.util.Optional;
 import java.util.logging.Logger;
 
 import static mypals.ml.CauldronFix.LOGGER;
@@ -46,7 +51,6 @@ import static mypals.ml.block.advancedCauldron.coloredCauldrons.ColoredCauldron.
 public interface BehaciorMaps extends CauldronBehavior{
 
     Map<Item, CauldronBehavior> COLORED_CAULDRON_BEHAVIOR = CauldronBehavior.createMap("colored").map();
-
     Map<Item, CauldronBehavior> POTION_CAULDRON_BEHAVIOR = CauldronBehavior.createMap("colored").map();
     Map<Item, CauldronBehavior> MILK_CAULDRON_BEHAVIOR = CauldronBehavior.createMap("milk").map();
     Map<Item, CauldronBehavior> HONEY_CAULDRON_BEHAVIOR = CauldronBehavior.createMap("honey").map();
@@ -67,12 +71,13 @@ public interface BehaciorMaps extends CauldronBehavior{
             //LOGGER.info("Registering:" + dye.getValue() + " to colored cauldrons");
             COLORED_CAULDRON_BEHAVIOR.put(dye.getValue(), (state, world,pos,player,hand,stack) ->{
                 BlockEntity blockEntity = world.getBlockEntity(pos);
-                if (stack.getItem() instanceof DyeItem && blockEntity instanceof ColoredCauldronBlockEntity colorCauldron && colorCauldron.getCauldronColor() != -1) {
+                if (stack.getItem() instanceof DyeItem && blockEntity instanceof ColoredCauldronBlockEntity colorCauldron) {
                     if (!world.isClient) {
                         player.incrementStat(Stats.USE_CAULDRON);
                         colorCauldron.setColor(((DyeItem) stack.getItem()).getColor());
                         colorCauldron.toUpdatePacket();
                         player.swingHand(hand);
+                        player.incrementStat(Stats.USED.getOrCreateStat(stack.getItem()));
                         if(!player.isCreative() && !player.isSpectator())
                             stack.decrement(1);
                         world.playSound(player,pos,SoundEvents.ITEM_DYE_USE,SoundCategory.PLAYERS,1,1);
@@ -86,7 +91,7 @@ public interface BehaciorMaps extends CauldronBehavior{
             });
         }
 
-       assert MinecraftClient.getInstance().world != null;
+       /*assert MinecraftClient.getInstance().world != null;
        if(MinecraftClient.getInstance().world.getRegistryManager() != null){
 
 
@@ -95,14 +100,25 @@ public interface BehaciorMaps extends CauldronBehavior{
                    addPotionToMaps(registryWrapper, Items.SPLASH_POTION);
                    addPotionToMaps(registryWrapper, Items.LINGERING_POTION);
                });
-       }
+       }*/
        //for(Map.Entry<DyeColor, DyeItem> dye : DyeItem.DYES.entrySet())
-
 
        COLORED_CAULDRON_BEHAVIOR.put(Items.GLASS_BOTTLE, (state, world, pos, player, hand, stack) -> {
            if (!world.isClient) {
                Item item = stack.getItem();
-               player.setStackInHand(hand, ItemUsage.exchangeStack(stack, player, new ItemStack(PotionContentsComponent.createStack(Items.POTION, Potions.WATER).getItem())));
+
+               BlockEntity colorCauldron = world.getBlockEntity(pos);
+               if(colorCauldron instanceof ColoredCauldronBlockEntity coloredCauldronBlockEntity) {
+
+                   ItemStack potion = new ItemStack(Items.POTION);
+                   ArrayList<StatusEffectInstance> effects = new ArrayList<>();
+                   effects.add(new StatusEffectInstance(StatusEffects.POISON,100,1));
+                   if(world.getBlockState(pos).get(LIGHT_LEVEL) > 0){
+                       effects.add(new StatusEffectInstance(StatusEffects.GLOWING,world.getBlockState(pos).get(LIGHT_LEVEL)*100+500,1));
+                   }
+                   potion.set(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(Optional.empty(), Optional.of(coloredCauldronBlockEntity.getCauldronColor()),effects));
+                   player.setStackInHand(hand, ItemUsage.exchangeStack(stack, player, potion));
+               }
                player.incrementStat(Stats.USE_CAULDRON);
                player.incrementStat(Stats.USED.getOrCreateStat(item));
                CauldronFix.decrementFluidLevel(state, world, pos);
@@ -159,6 +175,23 @@ public interface BehaciorMaps extends CauldronBehavior{
            return ItemActionResult.success(world.isClient);
        });
 
+       POTION_CAULDRON_BEHAVIOR.put(Items.GLOW_INK_SAC, (state, world, pos, player, hand, stack) -> {
+           if (!world.isClient) {
+               player.incrementStat(Stats.USE_CAULDRON);
+               if(world.getBlockState(pos).get(PotionCauldron.LIGHT_LEVEL) < 15)
+               {
+                   world.setBlockState(pos,state.with(PotionCauldron.LIGHT_LEVEL,state.get(PotionCauldron.LIGHT_LEVEL) +1));
+                   if(!player.isCreative() && !player.isSpectator())
+                       stack.decrement(1);
+                   player.swingHand(hand);
+                   world.playSound(player,pos,SoundEvents.ITEM_DYE_USE,SoundCategory.PLAYERS,1,1);
+               };
+               world.updateListeners(pos, state, state, 0);
+               CauldronFix.rebuildBlock(pos);
+           }
+
+           return ItemActionResult.success(world.isClient);
+       });
 
         DRAGON_BREATH_CAULDRON_BEHAVIOR.put(Items.GLASS_BOTTLE, (state, world, pos, player, hand, stack) -> {
             if (!world.isClient) {
@@ -255,52 +288,4 @@ public interface BehaciorMaps extends CauldronBehavior{
            return ItemActionResult.success(world.isClient);
        });
     }
-    private static void addPotionToMaps(
-            RegistryWrapper<Potion> registryWrapper,
-            Item item
-    ) {
-        // 使用 for-each 循环遍历所有药水条目
-        for (RegistryEntry<Potion> potionEntry : registryWrapper.streamEntries().toList()) {
-            Potion potion = potionEntry.value();
-
-            ItemStack potionStack = PotionContentsComponent.createStack(item, potionEntry);
-            LOGGER.info("Registering:" + potion + " to water cauldrons");
-            WATER_CAULDRON_BEHAVIOR.map().put(potionStack.getItem(), CauldronFix.createDyeBehavior(ModBlocks.POTION_CAULDRON,SoundEvents.ITEM_BOTTLE_EMPTY));
-            LOGGER.info("Registering:" + potion + " to potion cauldrons");
-            POTION_CAULDRON_BEHAVIOR.put(potionStack.getItem(), (state, world,pos,player,hand, stack) ->{
-                BlockEntity blockEntity = world.getBlockEntity(pos);
-                if (stack.getItem() instanceof PotionItem && blockEntity instanceof PotionCauldronBlockEntity potionCauldron && potionCauldron.getCauldronColor() != -1) {
-                    if (!world.isClient) {
-                        player.incrementStat(Stats.USE_CAULDRON);
-
-
-                        if(!(stack.getItem() instanceof PotionItem)){
-                            return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
-                        }
-                        RegistryEntry<Potion> potionRegistryEntry = Registries.POTION.getEntry(potion);
-
-                        potionCauldron.setColor(PotionContentsComponent.getColor(potionRegistryEntry));
-
-
-                            PotionContentsComponent potionContentsComponent = stack.getOrDefault(DataComponentTypes.POTION_CONTENTS, PotionContentsComponent.DEFAULT);
-                            potionContentsComponent.forEachEffect(potionCauldron::addStatusEffect);
-
-
-                        potionCauldron.toUpdatePacket();
-                        player.swingHand(hand);
-                        if(!player.isCreative() && !player.isSpectator())
-                            stack.decrement(1);
-                        world.playSound(player,pos,SoundEvents.ITEM_BOTTLE_EMPTY,SoundCategory.PLAYERS,1,1);
-
-                        world.updateListeners(pos, state, state, 0);
-                        CauldronFix.rebuildBlock(pos);
-                    }
-                    return ItemActionResult.success(world.isClient);
-                }
-                return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
-            });
-        }
-    }
-
-
 }

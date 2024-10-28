@@ -24,6 +24,8 @@ public class ModItemGroups {
                         entries.add(ModBlocks.HONEY_CAULDRON);
                         entries.add(ModBlocks.MILK_CAULDRON);
                         entries.add(ModBlocks.BAD_OMEN_CAULDRON);
+                        entries.add(ModBlocks.COLORED_CAULDRON);
+                        entries.add(ModBlocks.POTION_CAULDRON);
                         entries.add(Blocks.CAULDRON);
                     }).build());
     public static void registerModItemGroups() {
