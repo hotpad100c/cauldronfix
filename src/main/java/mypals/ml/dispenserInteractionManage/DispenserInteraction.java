@@ -239,7 +239,7 @@ public class DispenserInteraction {
                         world.playSound(null,targetPos, SoundEvents.ITEM_DYE_USE, SoundCategory.PLAYERS,1,1);
                         stack.decrement(1);
                         world.updateListeners(targetPos, targetBlock, targetBlock, 0);
-                        CauldronFix.rebuildBlock(targetPos);
+                        
                     }
                     cir.setReturnValue(stack);
                 }
@@ -253,7 +253,7 @@ public class DispenserInteraction {
                         world.playSound(null,targetPos, SoundEvents.ITEM_DYE_USE, SoundCategory.PLAYERS,1,1);
                         stack.decrement(1);
                         world.updateListeners(targetPos, targetBlock, targetBlock, 0);
-                        CauldronFix.rebuildBlock(targetPos);
+                        
                     }
                     cir.setReturnValue(stack);
 
@@ -267,7 +267,7 @@ public class DispenserInteraction {
 
                 coloredCauldron.setColor(dyeItem.getColor());
                 coloredCauldron.toUpdatePacket();
-                CauldronFix.rebuildBlock(targetPos);
+                
                 world.playSound(null, targetPos, SoundEvents.ITEM_DYE_USE, SoundCategory.BLOCKS, 1.0F, 1.0F);
                 stack.decrement(1);
                 cir.setReturnValue(stack);

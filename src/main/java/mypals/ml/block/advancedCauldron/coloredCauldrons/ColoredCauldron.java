@@ -8,8 +8,10 @@ import mypals.ml.block.advancedCauldron.potionCauldrons.PotionCauldronBlockEntit
 import net.minecraft.block.*;
 import net.minecraft.block.cauldron.CauldronBehavior;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.component.ComponentType;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.DyedColorComponent;
+import net.minecraft.component.type.NbtComponent;
 import net.minecraft.component.type.PotionContentsComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EquipmentSlot;
@@ -21,6 +23,7 @@ import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.passive.SheepEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.*;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.potion.Potions;
 import net.minecraft.registry.tag.ItemTags;
@@ -93,13 +96,12 @@ public class ColoredCauldron extends LeveledCauldronBlock implements BlockEntity
             for (ItemStack equipment : equipments) {
                 if (equipment.isIn(ItemTags.DYEABLE) && blockEntity instanceof ColoredCauldronBlockEntity colorCauldron && colorCauldron.getCauldronColor() != -1) {
                     if (!world.isClient) {
-                        if (!(Objects.requireNonNull(equipment.get(DataComponentTypes.DYED_COLOR)).rgb() == colorCauldron.getCauldronColor())) {
+                        if (!(equipment.getOrDefault(DataComponentTypes.DYED_COLOR, new DyedColorComponent(0, false)).rgb() == colorCauldron.getCauldronColor())) {
                             equipment.set(DataComponentTypes.DYED_COLOR, new DyedColorComponent(colorCauldron.getCauldronColor(), true));
                             world.playSound(livingEntity, pos, SoundEvents.ITEM_DYE_USE, SoundCategory.VOICE, 1, 1);
                             LeveledCauldronBlock.decrementFluidLevel(state, world, pos);
 
                             world.updateListeners(pos, state, state, 0);
-                            CauldronFix.rebuildBlock(pos);
                         }
                     }
                 }
@@ -112,6 +114,9 @@ public class ColoredCauldron extends LeveledCauldronBlock implements BlockEntity
         BlockEntity blockEntity = world.getBlockEntity(pos);
         assert blockEntity != null;
         blockEntity.toUpdatePacket();
+
+        NbtCompound not_a_potion = new NbtCompound();
+        not_a_potion.putBoolean("DyedPotion", true);
         //if (stack.isIn(ItemTags.DYEABLE) && blockEntity instanceof ColoredCauldronBlockEntity colorCauldron && colorCauldron.getCauldronColor() != -1) {
         if (stack.isIn(ItemTags.DYEABLE) && blockEntity instanceof ColoredCauldronBlockEntity colorCauldron && colorCauldron.getCauldronColor() != -1) {
 
@@ -123,37 +128,43 @@ public class ColoredCauldron extends LeveledCauldronBlock implements BlockEntity
                 world.playSound(player, pos, SoundEvents.ITEM_DYE_USE, SoundCategory.PLAYERS, 1, 1);
 
                 world.updateListeners(pos, state, state, 0);
-                CauldronFix.rebuildBlock(pos);
             }
 
             return ItemActionResult.success(world.isClient);
-        }else if (stack.getItem() instanceof PotionItem && stack.getItem() != PotionContentsComponent.createStack(Items.POTION, Potions.WATER).getItem())  {
+        } else if (stack.getItem() instanceof PotionItem && !Objects.requireNonNull(stack.get(DataComponentTypes.POTION_CONTENTS)).matches(Potions.WATER)) {
             PotionContentsComponent potionContentsComponent = stack.getOrDefault(DataComponentTypes.POTION_CONTENTS, PotionContentsComponent.DEFAULT);
 
             if (blockEntity instanceof ColoredCauldronBlockEntity coloredCauldronBlockEntity) {
                 int cauldronColor = coloredCauldronBlockEntity.getCauldronColor();
-                world.setBlockState(pos, ModBlocks.POTION_CAULDRON.getDefaultState().with(PotionCauldron.LIGHT_LEVEL, state.get(ColoredCauldron.LIGHT_LEVEL)).with(PotionCauldron.LEVEL, state.get(ColoredCauldron.LEVEL)));
-                player.incrementStat(Stats.USE_CAULDRON);
-                if (world.getBlockEntity(pos) instanceof PotionCauldronBlockEntity potionCauldron) {
-                    potionCauldron.setColor(potionContentsComponent.getColor());
-                    potionCauldron.setColor(cauldronColor);
+
+                if (stack.get(DataComponentTypes.CUSTOM_DATA) != null && stack.get(DataComponentTypes.CUSTOM_DATA).matches(not_a_potion)){
+                    coloredCauldronBlockEntity.setColor(potionContentsComponent.getColor());
                     if (CauldronFix.canIncrementFluidLevel(state)) {
-                        for (StatusEffectInstance effectInstance : potionContentsComponent.getEffects()) {
-                            potionCauldron.addStatusEffect(effectInstance);
+                        CauldronFix.incrementFluidLevel(world.getBlockState(pos), world, pos);
+                    }
+                } else {
+                    world.setBlockState(pos, ModBlocks.POTION_CAULDRON.getDefaultState().with(PotionCauldron.LIGHT_LEVEL, state.get(ColoredCauldron.LIGHT_LEVEL)).with(PotionCauldron.LEVEL, state.get(ColoredCauldron.LEVEL)));
+                    if (world.getBlockEntity(pos) instanceof PotionCauldronBlockEntity potionCauldron) {
+                        player.incrementStat(Stats.USE_CAULDRON);
+                        potionCauldron.setColor(potionContentsComponent.getColor());
+                        potionCauldron.setColor(cauldronColor);
+                        if (CauldronFix.canIncrementFluidLevel(state) && world.getBlockState(pos).getBlock() instanceof PotionCauldron) {
+                            CauldronFix.incrementFluidLevel(world.getBlockState(pos), world, pos);
+                            for (StatusEffectInstance effectInstance : potionContentsComponent.getEffects()) {
+                                potionCauldron.addStatusEffect(effectInstance);
+                            }
                             world.updateListeners(pos, state, state, 0);
                         }
-                        CauldronFix.incrementFluidLevel(state, world, pos);
                     }
-                    potionCauldron.toUpdatePacket();
-                    player.swingHand(hand);
-                    player.setStackInHand(hand, ItemUsage.exchangeStack(stack, player, new ItemStack(Items.GLASS_BOTTLE)));
-                    world.playSound(player, pos, SoundEvents.ITEM_BOTTLE_EMPTY, SoundCategory.PLAYERS, 1, 1);
-                    world.updateListeners(pos, state, state, 0);
-                    CauldronFix.rebuildBlock(pos);
                 }
+
+                player.swingHand(hand);
+                player.setStackInHand(hand, ItemUsage.exchangeStack(stack, player, new ItemStack(Items.GLASS_BOTTLE)));
+                world.playSound(player, pos, SoundEvents.ITEM_BOTTLE_EMPTY, SoundCategory.PLAYERS, 1, 1);
+                world.updateListeners(pos, state, state, 0);
             }
         }
-                CauldronBehavior cauldronBehavior = this.behaviorMap.map().get(stack.getItem());
+        CauldronBehavior cauldronBehavior = this.behaviorMap.map().get(stack.getItem());
         return cauldronBehavior.interact(state, world, pos, player, hand, stack);
     }
 

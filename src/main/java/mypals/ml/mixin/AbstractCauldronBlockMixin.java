@@ -18,6 +18,7 @@ import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.*;
 import net.minecraft.potion.Potion;
+import net.minecraft.potion.Potions;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
@@ -37,6 +38,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.Map;
+import java.util.Objects;
 
 @Mixin(AbstractCauldronBlock.class)
 public abstract class AbstractCauldronBlockMixin {
@@ -73,7 +75,7 @@ public abstract class AbstractCauldronBlockMixin {
             }
             world.playSound(player, pos, SoundEvents.ITEM_DYE_USE, SoundCategory.PLAYERS);
             return ItemActionResult.SUCCESS;
-        } else if (stack.getItem() instanceof PotionItem && (state.getBlock().equals(Blocks.WATER_CAULDRON) || state.getBlock().equals(Blocks.CAULDRON) || state.getBlock().equals(ModBlocks.COLORED_CAULDRON))) {
+        } else if (stack.getItem() instanceof PotionItem && !Objects.requireNonNull(stack.get(DataComponentTypes.POTION_CONTENTS)).matches(Potions.WATER) && (state.getBlock().equals(Blocks.WATER_CAULDRON) || state.getBlock().equals(Blocks.CAULDRON) || state.getBlock().equals(ModBlocks.COLORED_CAULDRON))) {
 
             PotionContentsComponent potionContentsComponent = stack.getOrDefault(DataComponentTypes.POTION_CONTENTS, PotionContentsComponent.DEFAULT);
 

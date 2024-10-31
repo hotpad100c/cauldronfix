@@ -9,7 +9,12 @@
   "block.cauldronfix.cauldron_with_honey": "Honey Cauldron",
   "block.cauldronfix.cauldron_with_milk": "Milk Cauldron",
   "block.cauldronfix.cauldron_with_ember": "A Cauldron With Some Embers Inside",
-  "block.cauldronfix.cauldron_with_bad_omen": "CURSED Cauldron"
+  "block.cauldronfix.cauldron_with_bad_omen": "CURSED Cauldron",
+  "block.cauldronfix.cauldron_with_potions": "Cauldron With Potion Inside",
+  "block.cauldronfix.colored_cauldron": "Cauldron With Tinted Water",
+  "item.cauldronfix.tinted_water_bottle":"Tinted Water Bottle",
+  "item.cauldronfix.potion":"Potion",
+  "item.cauldronfix.tipped_arrow":"Tipped Arrow"
 
 
 }

@@ -9,5 +9,10 @@
   "block.cauldronfix.cauldron_with_honey": "蜂蜜炼药锅",
   "block.cauldronfix.cauldron_with_milk": "牛奶炼药锅",
   "block.cauldronfix.cauldron_with_ember": "装了余烬的炼药锅",
-  "block.cauldronfix.cauldron_with_bad_omen": "不祥之锅"
+  "block.cauldronfix.cauldron_with_bad_omen": "不祥之锅",
+  "block.cauldronfix.cauldron_with_potions": "装有药水的锅",
+  "block.cauldronfix.colored_cauldron": "被染色的锅",
+  "item.cauldronfix.tinted_water_bottle":"染色水瓶",
+  "item.cauldronfix.potion":"药水",
+  "item.cauldronfix.tipped_arrow":"药箭"
 }

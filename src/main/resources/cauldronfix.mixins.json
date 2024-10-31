@@ -4,13 +4,16 @@
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "AbstractBlockMixin",
+    "AbstractCauldronBlockAccessor",
     "AbstractCauldronBlockMixin",
     "CauldronBlockMixin",
     "EndermanEntityMixin",
     "FallingBlockEntityMixin",
     "HopperBlockEntityAccessor",
     "HopperBlockEntityMixin",
-    "ItemDispenserBehaviorMixin"
+    "ItemDispenserBehaviorMixin",
+    "LeveledCauldronBlockAccessor",
+    "LeveledCauldronBlockMixin"
   ],
   "injectors": {
     "defaultRequire": 1

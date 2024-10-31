@@ -16,6 +16,7 @@ import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.registry.entry.RegistryEntry;
 
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.DyeColor;
 import net.minecraft.util.math.BlockPos;
 import org.jetbrains.annotations.Nullable;
 
@@ -90,6 +91,9 @@ public class PotionCauldronBlockEntity extends BlockEntity {
             }
             super.markDirty();
         }
+    }
+    public void setColor(DyeColor dyeColor) {
+        setColor(dyeColor.getMapColor().color);
     }
     public void setColor(int dyeColor) {
 

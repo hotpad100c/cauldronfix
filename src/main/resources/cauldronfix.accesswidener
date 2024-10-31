@@ -7,3 +7,7 @@ accessible field net/minecraft/block/entity/HopperBlockEntity transferCooldown I
 accessible field net/minecraft/item/DyeItem DYES Ljava/util/Map;
 
 accessible method net/minecraft/village/raid/RaidManager nextId ()I
+
+accessible method net/minecraft/block/AbstractCauldronBlock isEntityTouchingFluid (Lnet/minecraft/block/BlockState;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/entity/Entity;)Z
+
+accessible method net/minecraft/block/LeveledCauldronBlock getFluidHeight (Lnet/minecraft/block/BlockState;)D

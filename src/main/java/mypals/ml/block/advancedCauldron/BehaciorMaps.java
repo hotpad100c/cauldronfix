@@ -16,11 +16,13 @@ import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.DyedColorComponent;
+import net.minecraft.component.type.NbtComponent;
 import net.minecraft.component.type.PotionContentsComponent;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.item.*;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.Potions;
 import net.minecraft.predicate.item.PotionContentsPredicate;
@@ -35,14 +37,17 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.stat.Stats;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Text;
+import net.minecraft.text.TextColor;
 import net.minecraft.util.DyeColor;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.ItemActionResult;
 import net.minecraft.world.event.GameEvent;
 import net.minecraft.world.event.listener.GameEventListener;
 
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.Optional;
+import java.text.Format;
+import java.util.*;
 import java.util.logging.Logger;
 
 import static mypals.ml.CauldronFix.LOGGER;
@@ -75,7 +80,6 @@ public interface BehaciorMaps extends CauldronBehavior{
                     if (!world.isClient) {
                         player.incrementStat(Stats.USE_CAULDRON);
                         colorCauldron.setColor(((DyeItem) stack.getItem()).getColor());
-                        colorCauldron.toUpdatePacket();
                         player.swingHand(hand);
                         player.incrementStat(Stats.USED.getOrCreateStat(stack.getItem()));
                         if(!player.isCreative() && !player.isSpectator())
@@ -83,25 +87,33 @@ public interface BehaciorMaps extends CauldronBehavior{
                         world.playSound(player,pos,SoundEvents.ITEM_DYE_USE,SoundCategory.PLAYERS,1,1);
 
                         world.updateListeners(pos, state, state, 0);
-                        CauldronFix.rebuildBlock(pos);
+                        
+                    }
+                    return ItemActionResult.success(world.isClient);
+                }
+                return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+            });
+            POTION_CAULDRON_BEHAVIOR.put(dye.getValue(), (state, world,pos,player,hand,stack) ->{
+                BlockEntity blockEntity = world.getBlockEntity(pos);
+                if (stack.getItem() instanceof DyeItem && blockEntity instanceof PotionCauldronBlockEntity potionCauldronBlockEntity) {
+                    if (!world.isClient) {
+                        player.incrementStat(Stats.USE_CAULDRON);
+                        potionCauldronBlockEntity.setColor(((DyeItem) stack.getItem()).getColor());
+                        player.swingHand(hand);
+                        player.incrementStat(Stats.USED.getOrCreateStat(stack.getItem()));
+                        potionCauldronBlockEntity.addStatusEffect(new StatusEffectInstance(StatusEffects.POISON,100,1));
+                        if(!player.isCreative() && !player.isSpectator())
+                            stack.decrement(1);
+                        world.playSound(player,pos,SoundEvents.ITEM_DYE_USE,SoundCategory.PLAYERS,1,1);
+
+                        world.updateListeners(pos, state, state, 0);
+                        
                     }
                     return ItemActionResult.success(world.isClient);
                 }
                 return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
             });
         }
-
-       /*assert MinecraftClient.getInstance().world != null;
-       if(MinecraftClient.getInstance().world.getRegistryManager() != null){
-
-
-           MinecraftClient.getInstance().world.getRegistryManager().getOptionalWrapper(RegistryKeys.POTION).ifPresent(registryWrapper -> {
-                   addPotionToMaps(registryWrapper, Items.POTION);
-                   addPotionToMaps(registryWrapper, Items.SPLASH_POTION);
-                   addPotionToMaps(registryWrapper, Items.LINGERING_POTION);
-               });
-       }*/
-       //for(Map.Entry<DyeColor, DyeItem> dye : DyeItem.DYES.entrySet())
 
        COLORED_CAULDRON_BEHAVIOR.put(Items.GLASS_BOTTLE, (state, world, pos, player, hand, stack) -> {
            if (!world.isClient) {
@@ -116,7 +128,15 @@ public interface BehaciorMaps extends CauldronBehavior{
                    if(world.getBlockState(pos).get(LIGHT_LEVEL) > 0){
                        effects.add(new StatusEffectInstance(StatusEffects.GLOWING,world.getBlockState(pos).get(LIGHT_LEVEL)*100+500,1));
                    }
-                   potion.set(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(Optional.empty(), Optional.of(coloredCauldronBlockEntity.getCauldronColor()),effects));
+                   potion.set(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(Optional.of(Potions.WATER), Optional.of(coloredCauldronBlockEntity.getCauldronColor()),effects));
+
+
+                   MutableText name = Text.translatable("item.cauldronfix.tinted_water_bottle").withColor(coloredCauldronBlockEntity.getCauldronColor());
+                   potion.set(DataComponentTypes.ITEM_NAME, name);
+
+                   NbtCompound nbtData = new NbtCompound();
+                   nbtData.putBoolean("DyedPotion", true);
+                   potion.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(nbtData));
                    player.setStackInHand(hand, ItemUsage.exchangeStack(stack, player, potion));
                }
                player.incrementStat(Stats.USE_CAULDRON);
@@ -128,7 +148,7 @@ public interface BehaciorMaps extends CauldronBehavior{
            return ItemActionResult.success(world.isClient);
        });
        COLORED_CAULDRON_BEHAVIOR.put(PotionContentsComponent.createStack(Items.POTION, Potions.WATER).getItem(), (state, world, pos, player, hand, stack) -> {
-           if (CauldronFix.canIncrementFluidLevel(state)) {
+           if (CauldronFix.canIncrementFluidLevel(state) && Objects.requireNonNull(stack.get(DataComponentTypes.POTION_CONTENTS)).matches(Potions.WATER)) {
                if (!world.isClient) {
                    Item item = stack.getItem();
                    player.setStackInHand(hand, ItemUsage.exchangeStack(stack, player, new ItemStack(Items.GLASS_BOTTLE)));
@@ -167,9 +187,9 @@ public interface BehaciorMaps extends CauldronBehavior{
                        stack.decrement(1);
                    player.swingHand(hand);
                    world.playSound(player,pos,SoundEvents.ITEM_DYE_USE,SoundCategory.PLAYERS,1,1);
-               };
+               }
                world.updateListeners(pos, state, state, 0);
-               CauldronFix.rebuildBlock(pos);
+               
            }
 
            return ItemActionResult.success(world.isClient);
@@ -187,7 +207,7 @@ public interface BehaciorMaps extends CauldronBehavior{
                    world.playSound(player,pos,SoundEvents.ITEM_DYE_USE,SoundCategory.PLAYERS,1,1);
                };
                world.updateListeners(pos, state, state, 0);
-               CauldronFix.rebuildBlock(pos);
+               
            }
 
            return ItemActionResult.success(world.isClient);

@@ -31,7 +31,10 @@ import net.minecraft.stat.Stats;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.IntProperty;
 import net.minecraft.state.property.Properties;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
+import net.minecraft.text.TextColor;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.ItemActionResult;
 import net.minecraft.util.hit.BlockHitResult;
@@ -51,7 +54,7 @@ import static mypals.ml.block.advancedCauldron.coloredCauldrons.ColoredCauldron.
 public class PotionCauldron extends LeveledCauldronBlock implements BlockEntityProvider {
     public static final IntProperty LEVEL = Properties.LEVEL_3;
     public static final IntProperty LIGHT_LEVEL = IntProperty.of("light_level", 0, 15);
-    public static final ToIntFunction<BlockState> STATE_TO_LUMINANCE_2 = (state) -> (Integer) state.get(LIGHT_LEVEL);
+    public static final ToIntFunction<BlockState> STATE_TO_LUMINANCE_2 = state -> (Integer) state.get(LIGHT_LEVEL);
 
     public PotionCauldron(Biome.Precipitation precipitation, CauldronBehavior.CauldronBehaviorMap behaviorMap, Settings settings, Biome.Precipitation precipitation1) {
         super(precipitation, behaviorMap, settings);
@@ -80,17 +83,14 @@ public class PotionCauldron extends LeveledCauldronBlock implements BlockEntityP
         world.emitGameEvent(GameEvent.BLOCK_DESTROY, pos, GameEvent.Emitter.of(player, state));
         return state;
     }
-
+    @Override
     public void onDestroyedByExplosion(World world, BlockPos pos, Explosion explosion) {
 
     }
 
     @Override
     protected void onEntityCollision(BlockState state, World world, BlockPos pos, Entity entity) {
-        /*BlockEntity blockEntity = world.getBlockEntity(pos);
-        if(entity instanceof LivingEntity livingEntity && this.isEntityTouchingFluid(state, pos, livingEntity)){
 
-        }*/
     }
 
     @Override
@@ -104,14 +104,13 @@ public class PotionCauldron extends LeveledCauldronBlock implements BlockEntityP
                 if (!world.isClient) {
                     player.incrementStat(Stats.USE_CAULDRON);
                     potionCauldron.setColor(potionContentsComponent.getColor());
-                    if(CauldronFix.canIncrementFluidLevel(state))
-                    {
-                        for(StatusEffectInstance effectInstance : potionContentsComponent.getEffects()){
+                    if (CauldronFix.canIncrementFluidLevel(state)) {
+                        for (StatusEffectInstance effectInstance : potionContentsComponent.getEffects()) {
                             potionCauldron.addStatusEffect(effectInstance);
                             world.updateListeners(pos, state, state, 0);
                         }
-                        CauldronFix.incrementFluidLevel(state,world,pos);
-                    }else{
+                        CauldronFix.incrementFluidLevel(state, world, pos);
+                    } else {
                         Iterable<StatusEffectInstance> itemEffects = potionContentsComponent.getEffects();
                         Map<RegistryEntry<StatusEffect>, StatusEffectInstance> cauldronEffects = potionCauldron.getStatusEffect();
                         for (StatusEffectInstance itemEffect : itemEffects) {
@@ -128,7 +127,7 @@ public class PotionCauldron extends LeveledCauldronBlock implements BlockEntityP
                                     int newDuration = cauldronEffect.getDuration() + itemEffect.getDuration() / 6;
                                     cauldronEffects.put(cauldronKey, new StatusEffectInstance(effectType, newDuration, cauldronEffect.getAmplifier()));
 
-                                }else{
+                                } else {
                                     potionCauldron.addStatusEffect(itemEffect);
                                 }
                             }
@@ -139,12 +138,12 @@ public class PotionCauldron extends LeveledCauldronBlock implements BlockEntityP
                     player.setStackInHand(hand, ItemUsage.exchangeStack(stack, player, new ItemStack(Items.GLASS_BOTTLE)));
                     world.playSound(player, pos, SoundEvents.ITEM_BOTTLE_EMPTY, SoundCategory.PLAYERS, 1, 1);
                     world.updateListeners(pos, state, state, 0);
-                    CauldronFix.rebuildBlock(pos);
+                    
                 }
                 return ItemActionResult.success(world.isClient);
             }
             return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
-        }else if (stack.getItem() instanceof GlassBottleItem || stack.getItem() instanceof ArrowItem ) {
+        } else if (stack.getItem() instanceof GlassBottleItem || stack.getItem() instanceof ArrowItem) {
             BlockEntity blockEntity = world.getBlockEntity(pos);
             if (blockEntity instanceof PotionCauldronBlockEntity potionCauldron) {
                 if (!world.isClient) {
@@ -160,24 +159,29 @@ public class PotionCauldron extends LeveledCauldronBlock implements BlockEntityP
                         if (lightLevel > 0) {
                             effectInstances.add(new StatusEffectInstance(StatusEffects.GLOWING, lightLevel * 100, 1));
                         }
-
                         potionContentsComponent = new PotionContentsComponent(
                                 Optional.empty(),
-                                Optional.of(PotionContentsComponent.mixColors(effectInstances).getAsInt()),
+                                Optional.of(potionCauldron.getCauldronColor()),
                                 effectInstances
                         );
                     }
 
-                    if(stack.getItem() instanceof GlassBottleItem ) {
+                    if (stack.getItem() instanceof GlassBottleItem) {
                         ItemStack potionStack = new ItemStack(Items.POTION);
                         Objects.requireNonNull(potionStack.set(DataComponentTypes.POTION_CONTENTS, potionContentsComponent));
+                        MutableText name = Text.translatable("item.cauldronfix.potion").withColor(potionCauldron.getCauldronColor());
+                        potionStack.set(DataComponentTypes.ITEM_NAME, name);
                         player.setStackInHand(hand, ItemUsage.exchangeStack(stack, player, potionStack));
-                    }else if (stack.getItem() instanceof ArrowItem){
+                    } else if (stack.getItem() instanceof ArrowItem) {
                         ItemStack arrowStack = new ItemStack(Items.TIPPED_ARROW);
                         arrowStack.setCount(stack.getCount());
                         Objects.requireNonNull(arrowStack.set(DataComponentTypes.POTION_CONTENTS, potionContentsComponent));
+                        MutableText name = Text.translatable("item.cauldronfix.tipped_arrow").withColor(potionCauldron.getCauldronColor());
+                        arrowStack.set(DataComponentTypes.ITEM_NAME, name);
                         player.setStackInHand(hand, ItemUsage.exchangeStack(stack, player, arrowStack));
+                        stack.decrementUnlessCreative(stack.getCount(),player);
                     }
+
 
                     player.incrementStat(Stats.USE_CAULDRON);
                     potionCauldron.toUpdatePacket();
@@ -186,7 +190,7 @@ public class PotionCauldron extends LeveledCauldronBlock implements BlockEntityP
                     CauldronFix.decrementFluidLevel(state, world, pos);
                     world.playSound(player, pos, SoundEvents.ITEM_BOTTLE_FILL, SoundCategory.PLAYERS, 1, 1);
                     world.updateListeners(pos, state, state, 0);
-                    CauldronFix.rebuildBlock(pos);
+                    
                 }
                 return ItemActionResult.success(world.isClient);
             }
