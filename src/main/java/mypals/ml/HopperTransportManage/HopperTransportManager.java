@@ -106,8 +106,8 @@ public class HopperTransportManager {
                 }
 
             }
-        } else if (aboveBlockState.getBlock() == ModBlocks.COLORED_CAULDRON) {
-            if (cauldronTransferCooldown <= 0 && (downBlockState.getBlock() == ModBlocks.COLORED_CAULDRON || downBlockState.getBlock() == Blocks.CAULDRON || downBlockState.getBlock() == ModBlocks.POTION_CAULDRON)) {
+        } else if (world.getBlockEntity(abovePos) instanceof ColoredCauldronBlockEntity coloredCauldronBlockAbove) {
+            if (cauldronTransferCooldown <= 0 && (downBlockState.getBlock() == ModBlocks.COLORED_CAULDRON || downBlockState.getBlock() == Blocks.CAULDRON || downBlockState.getBlock() == Blocks.WATER_CAULDRON || downBlockState.getBlock() == ModBlocks.POTION_CAULDRON)) {
 
 
                 if (downBlockState.getBlock() != Blocks.CAULDRON) {
@@ -116,11 +116,7 @@ public class HopperTransportManager {
 
 
                     if (downWaterLevel < 3 && aboveWaterLevel > 0) {
-                        ColoredCauldronBlockEntity coloredCauldronBlockAbove = (ColoredCauldronBlockEntity) world.getBlockEntity(abovePos);
                         int color = coloredCauldronBlockAbove.getCauldronColor();
-
-                        CauldronFix.decrementFluidLevel(aboveBlockState, world, abovePos, false, 1);
-                        CauldronFix.incrementFluidLevel(downBlockState.with(ColoredCauldron.LIGHT_LEVEL, aboveBlockState.get(ColoredCauldron.LIGHT_LEVEL)), world, downPos, false, 1);
 
                         if (downBlockState.getBlock() == ModBlocks.COLORED_CAULDRON) {
                             downBlockState.with(ColoredCauldron.LIGHT_LEVEL, aboveBlockState.get(ColoredCauldron.LIGHT_LEVEL));
@@ -128,12 +124,16 @@ public class HopperTransportManager {
                             if (coloredCauldronBlockDown == null) return 16;
                             coloredCauldronBlockDown.setColor(color);
                         }
-                        if (downBlockState.getBlock() == ModBlocks.POTION_CAULDRON) {
+                        else if (downBlockState.getBlock() == ModBlocks.POTION_CAULDRON) {
                             downBlockState.with(PotionCauldron.LIGHT_LEVEL, aboveBlockState.get(ColoredCauldron.LIGHT_LEVEL));
+
+                            if(CauldronFix.canIncrementFluidLevel(downBlockState)){
+                                CauldronFix.incrementFluidLevel(downBlockState,world,downPos);
+                            }
                             ArrayList<StatusEffectInstance> effects = new ArrayList<>();
                             effects.add(new StatusEffectInstance(StatusEffects.POISON, 100, 1));
-                            if (world.getBlockState(pos).get(LIGHT_LEVEL) > 0) {
-                                effects.add(new StatusEffectInstance(StatusEffects.GLOWING, world.getBlockState(pos).get(LIGHT_LEVEL) * 100 + 500, 1));
+                            if (world.getBlockState(abovePos).get(ColoredCauldron.LIGHT_LEVEL) > 0) {
+                                effects.add(new StatusEffectInstance(StatusEffects.GLOWING, world.getBlockState(abovePos).get(ColoredCauldron.LIGHT_LEVEL) * 100 + 500, 1));
                             }
 
                             PotionCauldronBlockEntity potionCauldronBlockEntity = (PotionCauldronBlockEntity) world.getBlockEntity(downPos);
@@ -141,14 +141,22 @@ public class HopperTransportManager {
                             potionCauldronBlockEntity.setColor(color);
                             for (StatusEffectInstance statusEffectInstance : effects)
                                 potionCauldronBlockEntity.addStatusEffect(statusEffectInstance);
+                        } else if(downBlockState.getBlock() == Blocks.WATER_CAULDRON){
+
+                            world.setBlockState(downPos, ModBlocks.COLORED_CAULDRON.getDefaultState().with(Properties.LEVEL_3, aboveBlockState.get(ColoredCauldron.LEVEL)).with(ColoredCauldron.LIGHT_LEVEL, aboveBlockState.get(ColoredCauldron.LIGHT_LEVEL)));
+                            CauldronFix.incrementFluidLevel(downBlockState, world, downPos, false, 1);
+                            ColoredCauldronBlockEntity coloredCauldronBlockDown = (ColoredCauldronBlockEntity) world.getBlockEntity(downPos);
+                            if (coloredCauldronBlockDown == null) return 16;
+                            coloredCauldronBlockDown.setColor(color);
                         }
+                        CauldronFix.decrementFluidLevel(aboveBlockState, world, abovePos, false, 1);
+
                     }
                     world.markDirty(pos);
                     return 16;
                 } else {
                     int aboveWaterLevel = aboveBlockState.get(Properties.LEVEL_3);
                     if (aboveWaterLevel > 0) {
-                        ColoredCauldronBlockEntity coloredCauldronBlockAbove = (ColoredCauldronBlockEntity) world.getBlockEntity(abovePos);
 
                         int color = coloredCauldronBlockAbove.getCauldronColor();
 
@@ -167,18 +175,17 @@ public class HopperTransportManager {
 
             }
         } else if (world.getBlockEntity(abovePos) instanceof PotionCauldronBlockEntity potionCauldronBlockEntityAbove) {
-            if (cauldronTransferCooldown <= 0 && (downBlockState.getBlock() == ModBlocks.COLORED_CAULDRON || downBlockState.getBlock() == Blocks.CAULDRON || downBlockState.getBlock() == ModBlocks.POTION_CAULDRON)) {
+            if (cauldronTransferCooldown <= 0 && (downBlockState.getBlock() == ModBlocks.COLORED_CAULDRON || downBlockState.getBlock() == Blocks.CAULDRON || downBlockState.getBlock() == Blocks.WATER_CAULDRON || downBlockState.getBlock() == ModBlocks.POTION_CAULDRON)) {
 
+
+                Map<RegistryEntry<StatusEffect>, StatusEffectInstance> cauldronEffects = potionCauldronBlockEntityAbove.getStatusEffect();
+                ArrayList<StatusEffectInstance> statusEffectInstanceList = new ArrayList<>(cauldronEffects.values());
+                int cauldronColorAbove = potionCauldronBlockEntityAbove.getCauldronColor();
 
                 if (downBlockState.getBlock() != Blocks.CAULDRON) {
+
                     int downWaterLevel = downBlockState.get(Properties.LEVEL_3);
                     int aboveWaterLevel = aboveBlockState.get(Properties.LEVEL_3);
-
-                    Map<RegistryEntry<StatusEffect>, StatusEffectInstance> cauldronEffects = potionCauldronBlockEntityAbove.getStatusEffect();
-                    ArrayList<StatusEffectInstance> statusEffectInstanceList = new ArrayList<>(cauldronEffects.values());
-                    int cauldronColorAbove = potionCauldronBlockEntityAbove.getCauldronColor();
-
-
                     if (downWaterLevel < 3 && aboveWaterLevel > 0) {
                         if (downBlockState.getBlock().equals(ModBlocks.COLORED_CAULDRON)) {
                             ColoredCauldronBlockEntity coloredCauldronBlockEntityDown = (ColoredCauldronBlockEntity) world.getBlockEntity(downPos);
@@ -186,7 +193,8 @@ public class HopperTransportManager {
 
                             CauldronFix.decrementFluidLevel(aboveBlockState, world, abovePos, false, 1);
                             world.setBlockState(downPos, ModBlocks.POTION_CAULDRON.getDefaultState().with(PotionCauldron.LIGHT_LEVEL, aboveBlockState.get(PotionCauldron.LIGHT_LEVEL)).with(PotionCauldron.LEVEL, downBlockState.get(ColoredCauldron.LEVEL)));
-                            CauldronFix.incrementFluidLevel(world.getBlockState(downPos), world, downPos, false, 1);
+                            if(CauldronFix.canIncrementFluidLevel(world.getBlockState(downPos))){
+                                CauldronFix.incrementFluidLevel(world.getBlockState(downPos), world, downPos, false, 1);}
 
                             if (world.getBlockEntity(downPos) instanceof PotionCauldronBlockEntity newPotionCauldron) {
                                 newPotionCauldron.setColor(cauldronColorDown);
@@ -199,7 +207,7 @@ public class HopperTransportManager {
                             }
                         } else if (downBlockState.getBlock().equals(ModBlocks.POTION_CAULDRON)) {
                             CauldronFix.decrementFluidLevel(aboveBlockState, world, abovePos, false, 1);
-                            CauldronFix.incrementFluidLevel(downBlockState.with(PotionCauldron.LIGHT_LEVEL, aboveBlockState.get(PotionCauldron.LIGHT_LEVEL)).with(PotionCauldron.LEVEL, aboveBlockState.get(PotionCauldron.LEVEL)), world, downPos, false, 1);
+                            CauldronFix.incrementFluidLevel(downBlockState.with(PotionCauldron.LIGHT_LEVEL, aboveBlockState.get(PotionCauldron.LIGHT_LEVEL)), world, downPos, false, 1);
 
                             PotionCauldronBlockEntity potionCauldronBlockEntityDown = (PotionCauldronBlockEntity) world.getBlockEntity(downPos);
                             int cauldronColorDown = potionCauldronBlockEntityDown.getCauldronColor();
@@ -213,8 +221,37 @@ public class HopperTransportManager {
                                     }
                                 }
                             }
+                        }else if(downBlockState.getBlock() == Blocks.WATER_CAULDRON){
+
+                            world.setBlockState(downPos, ModBlocks.POTION_CAULDRON.getDefaultState().with(PotionCauldron.LEVEL, downBlockState.get(Properties.LEVEL_3)).with(ColoredCauldron.LIGHT_LEVEL, aboveBlockState.get(PotionCauldron.LIGHT_LEVEL)));
+                            CauldronFix.incrementFluidLevel(downBlockState, world, downPos, false, 1);
+
+                            if (world.getBlockEntity(downPos) instanceof PotionCauldronBlockEntity newPotionCauldron) {
+                                newPotionCauldron.setColor(cauldronColorAbove);
+                                if (CauldronFix.canIncrementFluidLevel(state) && world.getBlockState(pos).getBlock() instanceof PotionCauldron) {
+                                    for (StatusEffectInstance effectInstance : statusEffectInstanceList) {
+                                        newPotionCauldron.addStatusEffect(effectInstance);
+                                    }
+                                }
+                            }
                         }
 
+                    }
+                    world.updateListeners(pos, state, state, 0);
+                    world.markDirty(pos);
+                    return 16;
+                }else{
+
+                    world.setBlockState(downPos, ModBlocks.POTION_CAULDRON.getDefaultState().with(PotionCauldron.LIGHT_LEVEL, aboveBlockState.get(PotionCauldron.LIGHT_LEVEL)));
+                    CauldronFix.incrementFluidLevel(downBlockState, world, downPos, false, 1);
+
+                    if (world.getBlockEntity(downPos) instanceof PotionCauldronBlockEntity newPotionCauldron) {
+                        newPotionCauldron.setColor(cauldronColorAbove);
+                        if (CauldronFix.canIncrementFluidLevel(state) && world.getBlockState(pos).getBlock() instanceof PotionCauldron) {
+                            for (StatusEffectInstance effectInstance : statusEffectInstanceList) {
+                                newPotionCauldron.addStatusEffect(effectInstance);
+                            }
+                        }
                     }
                     world.updateListeners(pos, state, state, 0);
                     world.markDirty(pos);
