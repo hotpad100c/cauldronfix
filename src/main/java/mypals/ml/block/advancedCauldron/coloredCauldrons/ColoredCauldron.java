@@ -1,10 +1,12 @@
 package mypals.ml.block.advancedCauldron.coloredCauldrons;
 
+import com.google.common.primitives.Ints;
 import com.mojang.serialization.MapCodec;
 import mypals.ml.CauldronFix;
 import mypals.ml.block.ModBlocks;
 import mypals.ml.block.advancedCauldron.potionCauldrons.PotionCauldron;
 import mypals.ml.block.advancedCauldron.potionCauldrons.PotionCauldronBlockEntity;
+import mypals.ml.mixin.WolfEntityAccessor;
 import net.minecraft.block.*;
 import net.minecraft.block.cauldron.CauldronBehavior;
 import net.minecraft.block.entity.BlockEntity;
@@ -21,6 +23,7 @@ import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.passive.SheepEntity;
+import net.minecraft.entity.passive.WolfEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.*;
 import net.minecraft.nbt.NbtCompound;
@@ -33,6 +36,7 @@ import net.minecraft.stat.Stats;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.IntProperty;
 import net.minecraft.state.property.Properties;
+import net.minecraft.util.DyeColor;
 import net.minecraft.util.Hand;
 import net.minecraft.util.ItemActionResult;
 import net.minecraft.util.hit.BlockHitResult;
@@ -43,9 +47,13 @@ import net.minecraft.world.event.GameEvent;
 import net.minecraft.world.explosion.Explosion;
 import org.jetbrains.annotations.Nullable;
 
+import java.awt.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Objects;
+import java.util.Random;
 import java.util.function.ToIntFunction;
+import java.util.random.RandomGenerator;
 
 public class ColoredCauldron extends LeveledCauldronBlock implements BlockEntityProvider {
     public static final IntProperty LEVEL = Properties.LEVEL_3;
@@ -89,25 +97,67 @@ public class ColoredCauldron extends LeveledCauldronBlock implements BlockEntity
         BlockEntity blockEntity = world.getBlockEntity(pos);
         if (entity instanceof LivingEntity livingEntity && this.isEntityTouchingFluid(state, pos, livingEntity)) {
             ArrayList<ItemStack> equipments = new ArrayList<>();
-            equipments.add((livingEntity).getEquippedStack(EquipmentSlot.HEAD));
-            equipments.add((livingEntity).getEquippedStack(EquipmentSlot.BODY));
-            equipments.add((livingEntity).getEquippedStack(EquipmentSlot.LEGS));
-            equipments.add((livingEntity).getEquippedStack(EquipmentSlot.FEET));
+            equipments.add(livingEntity.getEquippedStack(EquipmentSlot.HEAD));
+            equipments.add(livingEntity.getEquippedStack(EquipmentSlot.CHEST));
+            equipments.add(livingEntity.getEquippedStack(EquipmentSlot.BODY));
+            equipments.add(livingEntity.getEquippedStack(EquipmentSlot.LEGS));
+            equipments.add(livingEntity.getEquippedStack(EquipmentSlot.FEET));
             for (ItemStack equipment : equipments) {
-                if (equipment.isIn(ItemTags.DYEABLE) && blockEntity instanceof ColoredCauldronBlockEntity colorCauldron && colorCauldron.getCauldronColor() != -1) {
+                if (blockEntity instanceof ColoredCauldronBlockEntity colorCauldron && colorCauldron.getCauldronColor() != -1) {
                     if (!world.isClient) {
-                        if (!(equipment.getOrDefault(DataComponentTypes.DYED_COLOR, new DyedColorComponent(0, false)).rgb() == colorCauldron.getCauldronColor())) {
-                            equipment.set(DataComponentTypes.DYED_COLOR, new DyedColorComponent(colorCauldron.getCauldronColor(), true));
-                            world.playSound(livingEntity, pos, SoundEvents.ITEM_DYE_USE, SoundCategory.VOICE, 1, 1);
-                            LeveledCauldronBlock.decrementFluidLevel(state, world, pos);
+                        int colorNew = colorCauldron.getCauldronColor();
+                        if (equipment.isIn(ItemTags.DYEABLE) && equipment.getOrDefault(DataComponentTypes.DYED_COLOR, new DyedColorComponent(0, false)).rgb() != colorCauldron.getCauldronColor()) {
 
+                            int colorOld = equipment.getOrDefault(DataComponentTypes.DYED_COLOR, new DyedColorComponent(0, false)).rgb();
+                            equipment.set(DataComponentTypes.DYED_COLOR, new DyedColorComponent(blendColors(colorOld, colorNew), true));
+                            colorCauldron.decreaseColTime(world,pos,1);
                             world.updateListeners(pos, state, state, 0);
                         }
                     }
                 }
             }
+
         }
     }
+    public static int blendColors(int colorOld, int dyeColor) {
+        int newRed = (dyeColor >> 16) & 0xFF;
+        int newGreen = (dyeColor >> 8) & 0xFF;
+        int newBlue = dyeColor & 0xFF;
+
+        int oldRed = (colorOld >> 16) & 0xFF;
+        int oldGreen = (colorOld >> 8) & 0xFF;
+        int oldBlue = colorOld & 0xFF;
+
+        var newColor = new int[3];
+        newColor[0] = newRed;
+        newColor[1] = newGreen;
+        newColor[2] = newBlue;
+
+        var oldColor = new int[3];
+        oldColor[0] = oldRed;
+        oldColor[1] = oldGreen;
+        oldColor[2] = oldBlue;
+        if (!Arrays.equals(oldColor, new int[]{-1, -1, -1})) {
+            var avgColor = new int[3];
+            avgColor[0] = (oldColor[0] + newColor[0]) / 50;
+            avgColor[1] = (oldColor[1] + newColor[1]) / 50;
+            avgColor[2] = (oldColor[2] + newColor[2]) / 50;
+
+            var avgMax = (Ints.max(oldColor) + Ints.max(newColor)) / 2.0f;
+
+            var maxOfAvg = (float) Ints.max(avgColor);
+            var gainFactor = (avgMax / maxOfAvg);
+
+            oldColor[0] = (int) (avgColor[0] * gainFactor);
+            oldColor[1] = (int) (avgColor[1] * gainFactor);
+            oldColor[2] = (int) (avgColor[2] * gainFactor);
+        } else {
+            oldColor = newColor;
+        }
+
+        return (oldColor[0] << 16) | (oldColor[1] << 8) | oldColor[2];
+    }
+
 
     @Override
     protected ItemActionResult onUseWithItem(ItemStack stack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {

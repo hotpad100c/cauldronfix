@@ -1,43 +1,28 @@
 package mypals.ml.block.advancedCauldron.coloredCauldrons;
 
 import com.google.common.primitives.Ints;
-import com.jcraft.jogg.Packet;
 import mypals.ml.CauldronFix;
 import mypals.ml.block.ModBlockEntityTypes;
-import mypals.ml.block.ModBlocks;
+import mypals.ml.block.advancedCauldron.potionCauldrons.PotionCauldron;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.LeveledCauldronBlock;
 import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.DyedColorComponent;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.DyeItem;
-import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.listener.ClientPlayPacketListener;
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
 import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.registry.tag.ItemTags;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.stat.Stats;
 import net.minecraft.util.DyeColor;
-import net.minecraft.util.Hand;
-import net.minecraft.util.ItemActionResult;
-import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 
-import static net.fabricmc.fabric.impl.registry.sync.RegistryMapSerializer.toNbt;
-
 public class ColoredCauldronBlockEntity extends BlockEntity {
     private static final int[] NULL_COLOR = new int[]{-1, -1, -1};
+    public static final int DEFAULT_COLLIDE_TIME = 200;
     private int[] color = NULL_COLOR;
+    private int collideTime = DEFAULT_COLLIDE_TIME;
 
     public ColoredCauldronBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntityTypes.COLORED_CAULDRON_BLOCK_ENTITY, pos, state);
@@ -90,15 +75,17 @@ public class ColoredCauldronBlockEntity extends BlockEntity {
 
     @Override
     public void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
-        super.writeNbt(nbt, registryLookup);
         nbt.putIntArray("color", color);
+        nbt.putInt("collideTime", collideTime);
+        super.writeNbt(nbt, registryLookup);
     }
 
     @Override
     protected void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
-        super.readNbt(nbt, registryLookup);
         color = nbt.getIntArray("color");
+        collideTime = nbt.getInt("collideTime");
         markDirty();
+        super.readNbt(nbt, registryLookup);
     }
 
     @Nullable
@@ -123,5 +110,26 @@ public class ColoredCauldronBlockEntity extends BlockEntity {
             }
             super.markDirty();
         }
+    }
+    public void decreaseColTime (World world,BlockPos blockPos, int number){
+        collideTime-= number;
+        shouldDropLayer(world, blockPos);
+        markDirty();
+    }
+    private void shouldDropLayer(World world,BlockPos blockPos){
+        if(!(world.getBlockState(blockPos).getBlock() instanceof ColoredCauldron)){return;};
+        BlockState coloredCauldron = world.getBlockState(blockPos);
+        if(collideTime<=0){
+            CauldronFix.decrementFluidLevel(coloredCauldron,world,blockPos);
+            collideTime = DEFAULT_COLLIDE_TIME;
+        }
+
+    }
+    public void setColTime(int number){
+        collideTime = number;
+        markDirty();
+    }
+    public int getColTime(){
+        return collideTime;
     }
 }

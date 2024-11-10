@@ -18,6 +18,7 @@ import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.DyeColor;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
@@ -25,11 +26,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class PotionCauldronBlockEntity extends BlockEntity {
-
-    private static final Map<RegistryEntry<StatusEffect>, StatusEffectInstance> NULL_EFFECT = new HashMap<>();
+    
     private static final int[] NULL_COLOR = new int[]{-1, -1, -1};
+    public static final int DEFAULT_COLLIDE_TIME = 300;
     private Map<RegistryEntry<StatusEffect>, StatusEffectInstance> cauldronStatusEffects = new HashMap<>();
     private int[] color = NULL_COLOR;
+    private int collideTime = DEFAULT_COLLIDE_TIME;
 
     public PotionCauldronBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntityTypes.POTION_CAULDRON_BLOCK_ENTITY, pos, state);
@@ -47,6 +49,7 @@ public class PotionCauldronBlockEntity extends BlockEntity {
 
             nbt.put("potionEffects", nbtList);
         }
+        nbt.putInt("collideTime", collideTime);
         nbt.putIntArray("color", color);
         super.writeNbt(nbt, registryLookup);
     }
@@ -65,6 +68,7 @@ public class PotionCauldronBlockEntity extends BlockEntity {
             }
         }
         color = nbt.getIntArray("color");
+        collideTime = nbt.getInt("collideTime");
         super.readNbt(nbt, registryLookup);
         markDirty();
     }
@@ -122,10 +126,27 @@ public class PotionCauldronBlockEntity extends BlockEntity {
         } else {
             color = newColor;
         }
-        this.toUpdatePacket();
         markDirty();
     }
 
+    public void decreaseColTime (World world,BlockPos blockPos, int number){
+        collideTime -= number;
+        shouldDropLayer(world, blockPos);
+        markDirty();
+    }
+    private void shouldDropLayer(World world,BlockPos blockPos){
+        if(!(world.getBlockState(blockPos).getBlock() instanceof PotionCauldron)){return;};
+        BlockState potionCauldron = world.getBlockState(blockPos);
+        if(collideTime ==0){
+            CauldronFix.decrementFluidLevel(potionCauldron,world,blockPos);
+            collideTime = DEFAULT_COLLIDE_TIME;
+        }
+
+    }
+    public void setCollideTime(int number){
+        collideTime = number;
+        markDirty();
+    }
     public int getCauldronColor() {
         try {
             return !Arrays.equals(color, NULL_COLOR) ? (color[0] << 16) + (color[1] << 8) + color[2] : -1;
@@ -139,8 +160,6 @@ public class PotionCauldronBlockEntity extends BlockEntity {
         StatusEffectInstance statusEffectInstance = cauldronStatusEffects.get(effect.getEffectType());
         if (statusEffectInstance == null) {
             cauldronStatusEffects.put(effect.getEffectType(), effect);
-
-
         } else {
             statusEffectInstance.upgrade(effect);
         }

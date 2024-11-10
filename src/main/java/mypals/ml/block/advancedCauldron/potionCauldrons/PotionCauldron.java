@@ -1,30 +1,22 @@
 package mypals.ml.block.advancedCauldron.potionCauldrons;
 
 import mypals.ml.CauldronFix;
-import mypals.ml.block.advancedCauldron.coloredCauldrons.ColoredCauldronBlockEntity;
 import net.minecraft.block.*;
 import net.minecraft.block.cauldron.CauldronBehavior;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.DyedColorComponent;
-import net.minecraft.component.type.NbtComponent;
 import net.minecraft.component.type.PotionContentsComponent;
+import net.minecraft.entity.AreaEffectCloudEntity;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.*;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.potion.Potion;
+import net.minecraft.particle.ParticleTypes;
 import net.minecraft.potion.Potions;
-import net.minecraft.predicate.item.PotionContentsPredicate;
-import net.minecraft.registry.Registries;
 import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.registry.tag.ItemTags;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.stat.Stats;
@@ -33,8 +25,6 @@ import net.minecraft.state.property.IntProperty;
 import net.minecraft.state.property.Properties;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
-import net.minecraft.text.TextColor;
-import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.ItemActionResult;
 import net.minecraft.util.hit.BlockHitResult;
@@ -46,10 +36,7 @@ import net.minecraft.world.explosion.Explosion;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
-import java.util.function.Consumer;
 import java.util.function.ToIntFunction;
-
-import static mypals.ml.block.advancedCauldron.coloredCauldrons.ColoredCauldron.LIGHT_LEVEL;
 
 public class PotionCauldron extends LeveledCauldronBlock implements BlockEntityProvider {
     public static final IntProperty LEVEL = Properties.LEVEL_3;
@@ -79,18 +66,50 @@ public class PotionCauldron extends LeveledCauldronBlock implements BlockEntityP
     @Override
     public BlockState onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player) {
         this.spawnBreakParticles(world, player, pos, state);
-
+        if(world.getBlockEntity(pos) instanceof PotionCauldronBlockEntity potionCauldronBlockEntity && !world.isClient() && !player.isCreative()) {
+            AreaEffectCloudEntity areaEffectCloudEntity = new AreaEffectCloudEntity(world, pos.toBottomCenterPos().getX(), pos.toBottomCenterPos().getY(), pos.toBottomCenterPos().getZ());
+            areaEffectCloudEntity.setDuration(100);
+            areaEffectCloudEntity.setRadius(1);
+            areaEffectCloudEntity.setRadiusGrowth((7.0f - areaEffectCloudEntity.getRadius()) / (float) areaEffectCloudEntity.getDuration());
+            Map<RegistryEntry<StatusEffect>, StatusEffectInstance> cauldronEffects = potionCauldronBlockEntity.getStatusEffect();
+            for(StatusEffectInstance statusEffectInstance : cauldronEffects.values()) {
+                areaEffectCloudEntity.addEffect(statusEffectInstance);
+            }
+            world.spawnEntity(areaEffectCloudEntity);
+        }
         world.emitGameEvent(GameEvent.BLOCK_DESTROY, pos, GameEvent.Emitter.of(player, state));
         return state;
     }
     @Override
     public void onDestroyedByExplosion(World world, BlockPos pos, Explosion explosion) {
-
+        if(world.getBlockEntity(pos) instanceof PotionCauldronBlockEntity potionCauldronBlockEntity && !world.isClient()) {
+            if(explosion.getCausingEntity() instanceof PlayerEntity player && player.isCreative()){return;}
+            AreaEffectCloudEntity areaEffectCloudEntity = new AreaEffectCloudEntity(world, pos.toBottomCenterPos().getX(), pos.toBottomCenterPos().getY(), pos.toBottomCenterPos().getZ());
+            areaEffectCloudEntity.setDuration(100);
+            areaEffectCloudEntity.setRadius(1);
+            areaEffectCloudEntity.setRadiusGrowth((7.0f - areaEffectCloudEntity.getRadius()) / (float) areaEffectCloudEntity.getDuration());
+            Map<RegistryEntry<StatusEffect>, StatusEffectInstance> cauldronEffects = potionCauldronBlockEntity.getStatusEffect();
+            for(StatusEffectInstance statusEffectInstance : cauldronEffects.values()) {
+                areaEffectCloudEntity.addEffect(statusEffectInstance);
+            }
+            world.spawnEntity(areaEffectCloudEntity);
+        }
     }
 
     @Override
     protected void onEntityCollision(BlockState state, World world, BlockPos pos, Entity entity) {
-
+        if (entity instanceof LivingEntity livingEntity && world.getBlockEntity(pos) instanceof PotionCauldronBlockEntity potionCauldronBlockEntity) {
+            Map<RegistryEntry<StatusEffect>, StatusEffectInstance> cauldronEffects = potionCauldronBlockEntity.getStatusEffect();
+            for(StatusEffectInstance statusEffectInstance : cauldronEffects.values()) {
+                StatusEffectInstance effectInstance = new StatusEffectInstance(statusEffectInstance.getEffectType(),
+                        1,
+                        statusEffectInstance.getAmplifier(),
+                        statusEffectInstance.shouldShowParticles(),
+                        statusEffectInstance.shouldShowIcon());
+                livingEntity.addStatusEffect(effectInstance);
+            }
+            potionCauldronBlockEntity.decreaseColTime(world,pos,1);
+        }
     }
 
     @Override
@@ -104,6 +123,15 @@ public class PotionCauldron extends LeveledCauldronBlock implements BlockEntityP
                 if (!world.isClient) {
                     player.incrementStat(Stats.USE_CAULDRON);
                     potionCauldron.setColor(potionContentsComponent.getColor());
+                    if(potionContentsComponent.matches(Potions.WATER)) {
+                        Map<RegistryEntry<StatusEffect>, StatusEffectInstance> cauldronEffects = potionCauldron.getStatusEffect();
+                        for (RegistryEntry<StatusEffect> cauldronKey : cauldronEffects.keySet()) {
+                            StatusEffectInstance cauldronEffect = cauldronEffects.get(cauldronKey);
+                            RegistryEntry<StatusEffect> effectType = cauldronEffect.getEffectType();
+                            int newDuration = cauldronEffect.getDuration() / 6 ;
+                            cauldronEffects.put(cauldronKey, new StatusEffectInstance(effectType, newDuration, cauldronEffect.getAmplifier()));
+                        }
+                    }
                     if (CauldronFix.canIncrementFluidLevel(state)) {
                         for (StatusEffectInstance effectInstance : potionContentsComponent.getEffects()) {
                             potionCauldron.addStatusEffect(effectInstance);
@@ -133,6 +161,7 @@ public class PotionCauldron extends LeveledCauldronBlock implements BlockEntityP
                             }
                         }
                     }
+                    potionCauldron.setCollideTime(PotionCauldronBlockEntity.DEFAULT_COLLIDE_TIME);
                     potionCauldron.toUpdatePacket();
                     player.swingHand(hand);
                     player.setStackInHand(hand, ItemUsage.exchangeStack(stack, player, new ItemStack(Items.GLASS_BOTTLE)));

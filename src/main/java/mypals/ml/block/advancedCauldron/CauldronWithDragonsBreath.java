@@ -30,8 +30,7 @@ public class CauldronWithDragonsBreath extends LeveledCauldronBlock {
     @Override
     public BlockState onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player) {
         this.spawnBreakParticles(world, player, pos, state);
-
-        if(!player.isCreative() && !player.isSpectator()) {
+        if(!world.isClient() && !player.isCreative()) {
             AreaEffectCloudEntity areaEffectCloudEntity = new AreaEffectCloudEntity(world, pos.toCenterPos().getX(), pos.toCenterPos().getY(), pos.toCenterPos().getZ());
             areaEffectCloudEntity.setParticleType(ParticleTypes.DRAGON_BREATH);
             areaEffectCloudEntity.setDuration(this.getStateManager().getDefaultState().get(LEVEL) * 200);
@@ -45,23 +44,25 @@ public class CauldronWithDragonsBreath extends LeveledCauldronBlock {
             });
             world.spawnEntity(areaEffectCloudEntity);
         }
-
         world.emitGameEvent(GameEvent.BLOCK_DESTROY, pos, GameEvent.Emitter.of(player, state));
         return state;
     }
     public void onDestroyedByExplosion(World world, BlockPos pos, Explosion explosion) {
-        AreaEffectCloudEntity areaEffectCloudEntity = new AreaEffectCloudEntity(world, pos.toCenterPos().getX(), pos.toCenterPos().getY(), pos.toCenterPos().getZ());
-        areaEffectCloudEntity.setParticleType(ParticleTypes.DRAGON_BREATH);
-        areaEffectCloudEntity.setDuration(this.getStateManager().getDefaultState().get(LEVEL) * 200);
-        areaEffectCloudEntity.setRadius(this.getStateManager().getDefaultState().get(LEVEL));
-        areaEffectCloudEntity.setRadiusGrowth((7.0f - areaEffectCloudEntity.getRadius()) / (float) areaEffectCloudEntity.getDuration());
-        areaEffectCloudEntity.addEffect(new StatusEffectInstance(StatusEffects.INSTANT_DAMAGE, 1, 1){
-            @Override
-            public void onEntityDamage(LivingEntity livingEntity, DamageSource source, float amount){
-                livingEntity.damage(world.getDamageSources().dragonBreath(),amount);
-            }
-        });
-        world.spawnEntity(areaEffectCloudEntity);
+        if(!world.isClient()) {
+            if (explosion.getCausingEntity() instanceof PlayerEntity player && player.isCreative()) {return;}
+            AreaEffectCloudEntity areaEffectCloudEntity = new AreaEffectCloudEntity(world, pos.toCenterPos().getX(), pos.toCenterPos().getY(), pos.toCenterPos().getZ());
+            areaEffectCloudEntity.setParticleType(ParticleTypes.DRAGON_BREATH);
+            areaEffectCloudEntity.setDuration(this.getStateManager().getDefaultState().get(LEVEL) * 200);
+            areaEffectCloudEntity.setRadius(this.getStateManager().getDefaultState().get(LEVEL));
+            areaEffectCloudEntity.setRadiusGrowth((7.0f - areaEffectCloudEntity.getRadius()) / (float) areaEffectCloudEntity.getDuration());
+            areaEffectCloudEntity.addEffect(new StatusEffectInstance(StatusEffects.INSTANT_DAMAGE, 1, 1) {
+                @Override
+                public void onEntityDamage(LivingEntity livingEntity, DamageSource source, float amount) {
+                    livingEntity.damage(world.getDamageSources().dragonBreath(), amount);
+                }
+            });
+            world.spawnEntity(areaEffectCloudEntity);
+        }
     }
     @Override
     protected void onEntityCollision(BlockState state, World world, BlockPos pos, Entity entity) {

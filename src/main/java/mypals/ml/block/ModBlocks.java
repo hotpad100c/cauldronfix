@@ -44,7 +44,9 @@ public class ModBlocks {
     public static final Block DRAGONS_BREATH_CAULDRON = registerBlocks("cauldron_with_dragons_breath",
             new CauldronWithDragonsBreath(Biome.Precipitation.NONE,new CauldronBehavior.CauldronBehaviorMap("dragon_breath",DRAGON_BREATH_CAULDRON_BEHAVIOR),
                     AbstractBlock.Settings.create().mapColor(MapColor.PURPLE).strength(
-                    2.0F, 6.0F).requiresTool(),Biome.Precipitation.NONE));
+                    2.0F, 6.0F).requiresTool().luminance((state) -> {
+                        return 15;
+                    }),Biome.Precipitation.NONE));
     public static final Block HONEY_CAULDRON = registerBlocks("cauldron_with_honey",
             new CauldronWithHoney(Biome.Precipitation.NONE,new CauldronBehavior.CauldronBehaviorMap("honey",HONEY_CAULDRON_BEHAVIOR),
                     AbstractBlock.Settings.create().mapColor(MapColor.YELLOW).strength(

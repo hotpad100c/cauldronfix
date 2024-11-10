@@ -13,7 +13,8 @@
     "HopperBlockEntityMixin",
     "ItemDispenserBehaviorMixin",
     "LeveledCauldronBlockAccessor",
-    "LeveledCauldronBlockMixin"
+    "LeveledCauldronBlockMixin",
+    "WolfEntityAccessor"
   ],
   "injectors": {
     "defaultRequire": 1
