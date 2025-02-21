@@ -1,5 +1,6 @@
 package mypals.ml.block;
 
+import net.fabricmc.fabric.api.item.v1.EquipmentSlotProvider;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -9,12 +10,12 @@ import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.ItemEntity;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ArmorItem;
-import net.minecraft.item.Equipment;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.registry.RegistryKeys;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.stat.Stats;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.shape.VoxelShape;
@@ -24,11 +25,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.explosion.Explosion;
 import org.jetbrains.annotations.Nullable;
 
-public class CauldronWithHalfCobblestone extends Block implements Equipment {
-    @Override
-    public EquipmentSlot getSlotType() {
-        return EquipmentSlot.HEAD;
-    }
+public class CauldronWithHalfCobblestone extends Block implements EquipmentSlotProvider {
 
     public CauldronWithHalfCobblestone(Settings settings) {
         super(settings);
@@ -55,7 +52,7 @@ public class CauldronWithHalfCobblestone extends Block implements Equipment {
     public void afterBreak(World world, PlayerEntity player, BlockPos pos, BlockState state, @Nullable BlockEntity blockEntity, ItemStack tool) {
         player.incrementStat(Stats.MINED.getOrCreateStat(this));
         player.addExhaustion(0.005f);
-        if(EnchantmentHelper.getLevel(world.getRegistryManager().getWrapperOrThrow(RegistryKeys.ENCHANTMENT).getOrThrow(Enchantments.SILK_TOUCH) , tool) == 0) {
+        if(EnchantmentHelper.getLevel(world.getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT).getOrThrow(Enchantments.SILK_TOUCH) , tool) == 0) {
             world.setBlockState(pos, Blocks.CAULDRON.getDefaultState());
             world.spawnEntity(new ItemEntity(world,pos.toCenterPos().getX(),pos.toCenterPos().getY(),pos.toCenterPos().getZ(),new ItemStack(Items.COBBLESTONE_SLAB,1)));
         }
@@ -64,10 +61,15 @@ public class CauldronWithHalfCobblestone extends Block implements Equipment {
         }
     }
     @Override
-    public void onDestroyedByExplosion(World world, BlockPos pos, Explosion explosion) {
+    public void onDestroyedByExplosion(ServerWorld world, BlockPos pos, Explosion explosion) {
         world.spawnEntity(new ItemEntity(world,pos.toCenterPos().getX(),pos.toCenterPos().getY(),pos.toCenterPos().getZ(),new ItemStack(Items.COBBLESTONE_SLAB,1)));
         world.spawnEntity(new ItemEntity(world,pos.toCenterPos().getX(),pos.toCenterPos().getY(),pos.toCenterPos().getZ(),new ItemStack(Items.CAULDRON,1)));
     }
+    @Override
+    public EquipmentSlot getPreferredEquipmentSlot(LivingEntity entity, ItemStack stack) {
+        return EquipmentSlot.HEAD;
+    }
+
     @Override
     protected boolean hasComparatorOutput(BlockState state) {return true;}
     @Override

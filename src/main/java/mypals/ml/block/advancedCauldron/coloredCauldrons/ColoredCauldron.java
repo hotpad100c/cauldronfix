@@ -36,9 +36,9 @@ import net.minecraft.stat.Stats;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.IntProperty;
 import net.minecraft.state.property.Properties;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.DyeColor;
 import net.minecraft.util.Hand;
-import net.minecraft.util.ItemActionResult;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -160,7 +160,7 @@ public class ColoredCauldron extends LeveledCauldronBlock implements BlockEntity
 
 
     @Override
-    protected ItemActionResult onUseWithItem(ItemStack stack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
+    protected ActionResult onUseWithItem(ItemStack stack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
         BlockEntity blockEntity = world.getBlockEntity(pos);
         assert blockEntity != null;
         blockEntity.toUpdatePacket();
@@ -180,7 +180,7 @@ public class ColoredCauldron extends LeveledCauldronBlock implements BlockEntity
                 world.updateListeners(pos, state, state, 0);
             }
 
-            return ItemActionResult.success(world.isClient);
+            return ActionResult.SUCCESS;
         } else if (stack.getItem() instanceof PotionItem && !Objects.requireNonNull(stack.get(DataComponentTypes.POTION_CONTENTS)).matches(Potions.WATER)) {
             PotionContentsComponent potionContentsComponent = stack.getOrDefault(DataComponentTypes.POTION_CONTENTS, PotionContentsComponent.DEFAULT);
 

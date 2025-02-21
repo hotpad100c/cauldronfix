@@ -2,6 +2,7 @@ package mypals.ml.block.advancedCauldron.coloredCauldrons;
 
 import com.google.common.primitives.Ints;
 import mypals.ml.CauldronFix;
+import mypals.ml.CauldronFixClient;
 import mypals.ml.block.ModBlockEntityTypes;
 import mypals.ml.block.advancedCauldron.potionCauldrons.PotionCauldron;
 import net.minecraft.block.BlockState;
@@ -104,7 +105,7 @@ public class ColoredCauldronBlockEntity extends BlockEntity {
         if (world != null) {
             if (world.isClient()) {
                 this.toUpdatePacket();
-                CauldronFix.rebuildBlock(pos);
+                CauldronFixClient.rebuildBlock(pos);
             } else if (world instanceof ServerWorld) {
                 ((ServerWorld) world).getChunkManager().markForUpdate(pos);
             }

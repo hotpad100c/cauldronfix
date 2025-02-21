@@ -18,8 +18,8 @@ import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.state.property.Properties;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
-import net.minecraft.util.ItemActionResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.registry.tag.FluidTags;
 import net.minecraft.world.World;
@@ -31,7 +31,7 @@ import java.util.Map;
 public class CauldronBlockWatcher {
 
 
-    public static void cauldronBlockCheckWithItem(World world, BlockPos blockPos, ItemStack item, PlayerEntity player, Hand hand, CallbackInfoReturnable<ItemActionResult> cir) {
+    public static void cauldronBlockCheckWithItem(World world, BlockPos blockPos, ItemStack item, PlayerEntity player, Hand hand, CallbackInfoReturnable<ActionResult> cir) {
         if (!world.isClient()) {
             BlockState posUp = world.getBlockState(blockPos.up());
             BlockState pos = world.getBlockState(blockPos);
@@ -47,7 +47,7 @@ public class CauldronBlockWatcher {
                 world.addParticle(ParticleTypes.LAVA, blockPos.getX(), blockPos.up().getY(), blockPos.getZ(), 0.0, 0.5, 0.0);
                 world.playSound(null, blockPos, SoundEvents.BLOCK_LAVA_EXTINGUISH, SoundCategory.BLOCKS, 1f, 1f);
                 replaceItemOnHand(player, hand, new ItemStack(Items.BUCKET));
-                cir.setReturnValue(ItemActionResult.success(world.isClient()));
+                cir.setReturnValue(ActionResult.SUCCESS);
             } else if (item.getItem() == Items.WATER_BUCKET && (
                     (
                             pos.getBlock().equals(Blocks.CAULDRON) ||
@@ -58,7 +58,7 @@ public class CauldronBlockWatcher {
                 world.setBlockState(blockPos, ModBlocks.CAULDRON_WITH_STONE.getDefaultState(), Block.NOTIFY_ALL);
                 world.playSound(null, blockPos, SoundEvents.BLOCK_LAVA_EXTINGUISH, SoundCategory.BLOCKS, 1f, 1f);
                 replaceItemOnHand(player, hand, new ItemStack(Items.BUCKET));
-                cir.setReturnValue(ItemActionResult.success(world.isClient()));
+                cir.setReturnValue(ActionResult.SUCCESS);
             } else if (item.getItem() == Items.POWDER_SNOW_BUCKET && (
                     (
                             pos.getBlock().equals(Blocks.CAULDRON) ||
@@ -70,7 +70,7 @@ public class CauldronBlockWatcher {
                 world.playSound(null, blockPos, SoundEvents.ENTITY_PLAYER_SPLASH, SoundCategory.BLOCKS, 1f, 1f);
                 cauldronBlockCheck(world, blockPos);
                 replaceItemOnHand(player, hand, new ItemStack(Items.BUCKET));
-                cir.setReturnValue(ItemActionResult.success(world.isClient()));
+                cir.setReturnValue(ActionResult.SUCCESS);
             }
         }
     }
@@ -149,12 +149,7 @@ public class CauldronBlockWatcher {
                     areaEffectCloudEntity.setDuration(100);
                     areaEffectCloudEntity.setRadius(1);
                     areaEffectCloudEntity.setRadiusGrowth((7.0f - areaEffectCloudEntity.getRadius()) / (float) areaEffectCloudEntity.getDuration());
-                    areaEffectCloudEntity.addEffect(new StatusEffectInstance(StatusEffects.INSTANT_DAMAGE, 1, 1) {
-                        @Override
-                        public void onEntityDamage(LivingEntity livingEntity, DamageSource source, float amount) {
-                            livingEntity.damage(world.getDamageSources().dragonBreath(), amount);
-                        }
-                    });
+                    areaEffectCloudEntity.addEffect(new StatusEffectInstance(StatusEffects.INSTANT_DAMAGE, 1, 1));
                     world.spawnEntity(areaEffectCloudEntity);
                     world.playSound(null, blockPos, SoundEvents.ITEM_BOTTLE_FILL_DRAGONBREATH, SoundCategory.BLOCKS, 1f, 1f);
                     BlockState cauldronBlockState = Blocks.WATER_CAULDRON.getDefaultState().with(Properties.LEVEL_3, 3);

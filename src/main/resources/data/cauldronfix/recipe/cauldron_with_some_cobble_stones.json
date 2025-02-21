@@ -2,12 +2,8 @@
   "type": "minecraft:crafting_shapeless",
   "category": "misc",
   "ingredients": [
-    {
-      "item": "minecraft:cauldron"
-    },
-    {
-      "item": "minecraft:cobblestone_slab"
-    }
+    "minecraft:cauldron",
+    "minecraft:cobblestone_slab"
   ],
   "result": {
     "id": "cauldronfix:cauldron_with_some_cobble_stones",

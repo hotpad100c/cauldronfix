@@ -40,9 +40,9 @@ import net.minecraft.stat.Stats;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.text.TextColor;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.DyeColor;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.ItemActionResult;
 import net.minecraft.world.event.GameEvent;
 import net.minecraft.world.event.listener.GameEventListener;
 
@@ -89,9 +89,9 @@ public interface BehaciorMaps extends CauldronBehavior{
                         world.updateListeners(pos, state, state, 0);
                         
                     }
-                    return ItemActionResult.success(world.isClient);
+                    return ActionResult.SUCCESS;
                 }
-                return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+                return ActionResult.PASS_TO_DEFAULT_BLOCK_ACTION;
             });
             POTION_CAULDRON_BEHAVIOR.put(dye.getValue(), (state, world,pos,player,hand,stack) ->{
                 BlockEntity blockEntity = world.getBlockEntity(pos);
@@ -109,9 +109,9 @@ public interface BehaciorMaps extends CauldronBehavior{
                         world.updateListeners(pos, state, state, 0);
                         
                     }
-                    return ItemActionResult.success(world.isClient);
+                    return ActionResult.SUCCESS;
                 }
-                return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+                return ActionResult.PASS_TO_DEFAULT_BLOCK_ACTION;
             });
         }
 
@@ -124,11 +124,13 @@ public interface BehaciorMaps extends CauldronBehavior{
 
                    ItemStack potion = new ItemStack(Items.POTION);
                    ArrayList<StatusEffectInstance> effects = new ArrayList<>();
+                   //ArrayList<String> effectNames = new ArrayList<>();
                    effects.add(new StatusEffectInstance(StatusEffects.POISON,100,1));
+                   //effects.forEach(effect -> effectNames.add(effect.getTranslationKey()));
                    if(world.getBlockState(pos).get(LIGHT_LEVEL) > 0){
                        effects.add(new StatusEffectInstance(StatusEffects.GLOWING,world.getBlockState(pos).get(LIGHT_LEVEL)*100+500,1));
                    }
-                   potion.set(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(Optional.of(Potions.WATER), Optional.of(coloredCauldronBlockEntity.getCauldronColor()),effects));
+                   potion.set(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(Optional.of(Potions.WATER), Optional.of(coloredCauldronBlockEntity.getCauldronColor()),effects,Optional.empty()));
 
 
                    MutableText name = Text.translatable("item.cauldronfix.tinted_water_bottle").withColor(coloredCauldronBlockEntity.getCauldronColor());
@@ -145,7 +147,7 @@ public interface BehaciorMaps extends CauldronBehavior{
                world.playSound(null, pos, SoundEvents.ITEM_BOTTLE_FILL, SoundCategory.BLOCKS, 1.0F, 1.0F);
                world.emitGameEvent(null, GameEvent.FLUID_PLACE, pos);
            }
-           return ItemActionResult.success(world.isClient);
+           return ActionResult.SUCCESS;
        });
        COLORED_CAULDRON_BEHAVIOR.put(PotionContentsComponent.createStack(Items.POTION, Potions.WATER).getItem(), (state, world, pos, player, hand, stack) -> {
            if (CauldronFix.canIncrementFluidLevel(state) && Objects.requireNonNull(stack.get(DataComponentTypes.POTION_CONTENTS)).matches(Potions.WATER)) {
@@ -159,9 +161,9 @@ public interface BehaciorMaps extends CauldronBehavior{
                    world.emitGameEvent(null, GameEvent.FLUID_PLACE, pos);
                }
 
-               return ItemActionResult.success(world.isClient);
+               return ActionResult.SUCCESS;
            } else {
-               return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+               return ActionResult.PASS_TO_DEFAULT_BLOCK_ACTION;
            }
        });
        COLORED_CAULDRON_BEHAVIOR.put(Items.BUCKET, (state, world, pos, player, hand, stack) -> {
@@ -175,7 +177,7 @@ public interface BehaciorMaps extends CauldronBehavior{
                world.playSound(null, pos, SoundEvents.ITEM_BOTTLE_EMPTY, SoundCategory.BLOCKS, 1.0F, 1.0F);
                world.emitGameEvent(null, GameEvent.FLUID_PLACE, pos);
            }
-           return ItemActionResult.success(world.isClient);
+           return ActionResult.SUCCESS;
        });
        COLORED_CAULDRON_BEHAVIOR.put(Items.GLOW_INK_SAC, (state, world, pos, player, hand, stack) -> {
            if (!world.isClient) {
@@ -192,7 +194,7 @@ public interface BehaciorMaps extends CauldronBehavior{
                
            }
 
-           return ItemActionResult.success(world.isClient);
+           return ActionResult.SUCCESS;
        });
 
        POTION_CAULDRON_BEHAVIOR.put(Items.GLOW_INK_SAC, (state, world, pos, player, hand, stack) -> {
@@ -210,7 +212,7 @@ public interface BehaciorMaps extends CauldronBehavior{
                
            }
 
-           return ItemActionResult.success(world.isClient);
+           return ActionResult.SUCCESS;
        });
 
         DRAGON_BREATH_CAULDRON_BEHAVIOR.put(Items.GLASS_BOTTLE, (state, world, pos, player, hand, stack) -> {
@@ -223,7 +225,7 @@ public interface BehaciorMaps extends CauldronBehavior{
                 world.playSound(null, pos, SoundEvents.ITEM_BOTTLE_FILL, SoundCategory.BLOCKS, 1.0F, 1.0F);
                 world.emitGameEvent(null, GameEvent.FLUID_PLACE, pos);
             }
-            return ItemActionResult.success(world.isClient);
+            return ActionResult.SUCCESS;
         });
         DRAGON_BREATH_CAULDRON_BEHAVIOR.put(Items.DRAGON_BREATH, (state, world, pos, player, hand, stack) -> {
             if (CauldronFix.canIncrementFluidLevel(state)) {
@@ -237,9 +239,9 @@ public interface BehaciorMaps extends CauldronBehavior{
                     world.emitGameEvent(null, GameEvent.FLUID_PLACE, pos);
                 }
 
-                return ItemActionResult.success(world.isClient);
+                return ActionResult.SUCCESS;
             } else {
-                return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+                return ActionResult.PASS_TO_DEFAULT_BLOCK_ACTION;
             }
         });
 
@@ -254,7 +256,7 @@ public interface BehaciorMaps extends CauldronBehavior{
                world.emitGameEvent(null, GameEvent.FLUID_PLACE, pos);
            }
 
-           return ItemActionResult.success(world.isClient);
+           return ActionResult.SUCCESS;
        });
        HONEY_CAULDRON_BEHAVIOR.put(Items.HONEY_BOTTLE, (state, world, pos, player, hand, stack) -> {
            if (CauldronFix.canIncrementFluidLevel(state)) {
@@ -268,9 +270,9 @@ public interface BehaciorMaps extends CauldronBehavior{
                    world.emitGameEvent(null, GameEvent.FLUID_PLACE, pos);
                }
 
-               return ItemActionResult.success(world.isClient);
+               return ActionResult.SUCCESS;
            } else {
-               return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+               return ActionResult.PASS_TO_DEFAULT_BLOCK_ACTION;
            }
        });
 
@@ -287,9 +289,9 @@ public interface BehaciorMaps extends CauldronBehavior{
                    world.emitGameEvent(null, GameEvent.FLUID_PLACE, pos);
                }
 
-               return ItemActionResult.success(world.isClient);
+               return ActionResult.SUCCESS;
            } else {
-               return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+               return ActionResult.PASS_TO_DEFAULT_BLOCK_ACTION;
            }
        });
 
@@ -305,7 +307,7 @@ public interface BehaciorMaps extends CauldronBehavior{
                world.playSound(null, pos, SoundEvents.ITEM_BOTTLE_EMPTY, SoundCategory.BLOCKS, 1.0F, 1.0F);
                world.emitGameEvent(null, GameEvent.FLUID_PLACE, pos);
            }
-           return ItemActionResult.success(world.isClient);
+           return ActionResult.SUCCESS;
        });
     }
 }

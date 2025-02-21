@@ -29,8 +29,8 @@ public class DispenserInteraction {
         boolean blockIsDispenser = pointer.state().getBlock() == Blocks.DISPENSER;
 
         if (blockIsDispenser) {
-            boolean itemIsBucket = stack.getItem() instanceof FluidModificationItem || stack.getItem() instanceof MilkBucketItem;
-            boolean itemIsPotion = stack.getItem() instanceof PotionItem || stack.getItem() instanceof HoneyBottleItem || stack.getItem() instanceof OminousBottleItem || stack.getItem().equals(Items.DRAGON_BREATH);
+            boolean itemIsBucket = stack.getItem() instanceof FluidModificationItem || stack.getItem() == Items.MILK_BUCKET;
+            boolean itemIsPotion = stack.getItem() instanceof PotionItem || stack.getItem() == Items.HONEY_BOTTLE || stack.getItem() == Items.OMINOUS_BOTTLE || stack.getItem().equals(Items.DRAGON_BREATH);
             boolean itemIsBottle = stack.getItem() instanceof GlassBottleItem;
             boolean itemIsDye = stack.getItem() instanceof DyeItem || stack.getItem() instanceof GlowInkSacItem;
             if (itemIsBucket) {

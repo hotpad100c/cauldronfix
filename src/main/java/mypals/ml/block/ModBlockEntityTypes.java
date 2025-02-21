@@ -19,11 +19,11 @@ public class ModBlockEntityTypes {
 
     public static final BlockEntityType<ColoredCauldronBlockEntity> COLORED_CAULDRON_BLOCK_ENTITY = register(
             "colored_cauldron",
-            BlockEntityType.Builder.create(ColoredCauldronBlockEntity::new, ModBlocks.COLORED_CAULDRON).build()
+            FabricBlockEntityTypeBuilder.create(ColoredCauldronBlockEntity::new, ModBlocks.COLORED_CAULDRON).build()
     );
     public static final BlockEntityType<PotionCauldronBlockEntity> POTION_CAULDRON_BLOCK_ENTITY = register(
             "cauldron_with_potions",
-            BlockEntityType.Builder.create(PotionCauldronBlockEntity::new, ModBlocks.POTION_CAULDRON).build()
+            FabricBlockEntityTypeBuilder.create(PotionCauldronBlockEntity::new, ModBlocks.POTION_CAULDRON).build()
     );
 
     public static void registerBlockEntities() {

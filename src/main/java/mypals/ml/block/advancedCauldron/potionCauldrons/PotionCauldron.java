@@ -17,6 +17,7 @@ import net.minecraft.item.*;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.potion.Potions;
 import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.stat.Stats;
@@ -25,8 +26,8 @@ import net.minecraft.state.property.IntProperty;
 import net.minecraft.state.property.Properties;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
-import net.minecraft.util.ItemActionResult;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -81,7 +82,7 @@ public class PotionCauldron extends LeveledCauldronBlock implements BlockEntityP
         return state;
     }
     @Override
-    public void onDestroyedByExplosion(World world, BlockPos pos, Explosion explosion) {
+    public void onDestroyedByExplosion(ServerWorld world, BlockPos pos, Explosion explosion) {
         if(world.getBlockEntity(pos) instanceof PotionCauldronBlockEntity potionCauldronBlockEntity && !world.isClient()) {
             if(explosion.getCausingEntity() instanceof PlayerEntity player && player.isCreative()){return;}
             AreaEffectCloudEntity areaEffectCloudEntity = new AreaEffectCloudEntity(world, pos.toBottomCenterPos().getX(), pos.toBottomCenterPos().getY(), pos.toBottomCenterPos().getZ());
@@ -113,7 +114,7 @@ public class PotionCauldron extends LeveledCauldronBlock implements BlockEntityP
     }
 
     @Override
-    protected ItemActionResult onUseWithItem(ItemStack stack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
+    protected ActionResult onUseWithItem(ItemStack stack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
 
         if ((stack.getItem() instanceof PotionItem)) {
             PotionContentsComponent potionContentsComponent = stack.getOrDefault(DataComponentTypes.POTION_CONTENTS, PotionContentsComponent.DEFAULT);
@@ -169,9 +170,9 @@ public class PotionCauldron extends LeveledCauldronBlock implements BlockEntityP
                     world.updateListeners(pos, state, state, 0);
                     
                 }
-                return ItemActionResult.success(world.isClient);
+                return ActionResult.SUCCESS;
             }
-            return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+            return ActionResult.PASS_TO_DEFAULT_BLOCK_ACTION;
         } else if (stack.getItem() instanceof GlassBottleItem || stack.getItem() instanceof ArrowItem) {
             BlockEntity blockEntity = world.getBlockEntity(pos);
             if (blockEntity instanceof PotionCauldronBlockEntity potionCauldron) {
@@ -191,7 +192,8 @@ public class PotionCauldron extends LeveledCauldronBlock implements BlockEntityP
                         potionContentsComponent = new PotionContentsComponent(
                                 Optional.empty(),
                                 Optional.of(potionCauldron.getCauldronColor()),
-                                effectInstances
+                                effectInstances,
+                                Optional.empty()
                         );
                     }
 
@@ -221,9 +223,9 @@ public class PotionCauldron extends LeveledCauldronBlock implements BlockEntityP
                     world.updateListeners(pos, state, state, 0);
                     
                 }
-                return ItemActionResult.success(world.isClient);
+                return ActionResult.SUCCESS;
             }
-            return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+            return ActionResult.PASS_TO_DEFAULT_BLOCK_ACTION;
         }
         CauldronBehavior cauldronBehavior = this.behaviorMap.map().get(stack.getItem());
         return cauldronBehavior.interact(state, world, pos, player, hand, stack);

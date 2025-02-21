@@ -2,12 +2,8 @@
   "type": "minecraft:crafting_shapeless",
   "category": "misc",
   "ingredients": [
-    {
-      "item": "minecraft:cauldron"
-    },
-    {
-      "item": "minecraft:gravel"
-    }
+    "minecraft:cauldron",
+    "minecraft:gravel"
   ],
   "result": {
     "id": "cauldronfix:cauldron_with_gravel",

@@ -10,7 +10,9 @@ import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.Fluid;
+import net.minecraft.item.Items;
 import net.minecraft.particle.ParticleTypes;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.IntProperty;
 import net.minecraft.state.property.Properties;
@@ -36,12 +38,7 @@ public class CauldronWithDragonsBreath extends LeveledCauldronBlock {
             areaEffectCloudEntity.setDuration(this.getStateManager().getDefaultState().get(LEVEL) * 200);
             areaEffectCloudEntity.setRadius(this.getStateManager().getDefaultState().get(LEVEL));
             areaEffectCloudEntity.setRadiusGrowth((7.0f - areaEffectCloudEntity.getRadius()) / (float) areaEffectCloudEntity.getDuration());
-            areaEffectCloudEntity.addEffect(new StatusEffectInstance(StatusEffects.INSTANT_DAMAGE, 1, 1){
-                @Override
-                public void onEntityDamage(LivingEntity livingEntity, DamageSource source, float amount){
-                    livingEntity.damage(world.getDamageSources().dragonBreath(),amount);
-                }
-            });
+            areaEffectCloudEntity.addEffect(new StatusEffectInstance(StatusEffects.INSTANT_DAMAGE, 1, 1));
             world.spawnEntity(areaEffectCloudEntity);
         }
         world.emitGameEvent(GameEvent.BLOCK_DESTROY, pos, GameEvent.Emitter.of(player, state));
@@ -55,19 +52,15 @@ public class CauldronWithDragonsBreath extends LeveledCauldronBlock {
             areaEffectCloudEntity.setDuration(this.getStateManager().getDefaultState().get(LEVEL) * 200);
             areaEffectCloudEntity.setRadius(this.getStateManager().getDefaultState().get(LEVEL));
             areaEffectCloudEntity.setRadiusGrowth((7.0f - areaEffectCloudEntity.getRadius()) / (float) areaEffectCloudEntity.getDuration());
-            areaEffectCloudEntity.addEffect(new StatusEffectInstance(StatusEffects.INSTANT_DAMAGE, 1, 1) {
-                @Override
-                public void onEntityDamage(LivingEntity livingEntity, DamageSource source, float amount) {
-                    livingEntity.damage(world.getDamageSources().dragonBreath(), amount);
-                }
-            });
+            areaEffectCloudEntity.addEffect(new StatusEffectInstance(StatusEffects.INSTANT_DAMAGE, 1, 1) );
             world.spawnEntity(areaEffectCloudEntity);
         }
     }
+
     @Override
     protected void onEntityCollision(BlockState state, World world, BlockPos pos, Entity entity) {
         if (this.isEntityTouchingFluid(state, pos, entity)) {
-            entity.damage(world.getDamageSources().dragonBreath(), 2.5f);
+            entity.damage((ServerWorld) world, world.getDamageSources().dragonBreath(), 2.5f);
             if(entity instanceof LivingEntity livingEntity)
             {
                 livingEntity.addStatusEffect(new StatusEffectInstance(StatusEffects.STRENGTH,100,5));

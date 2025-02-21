@@ -2,6 +2,7 @@ package mypals.ml.block.advancedCauldron.potionCauldrons;
 
 import com.google.common.primitives.Ints;
 import mypals.ml.CauldronFix;
+import mypals.ml.CauldronFixClient;
 import mypals.ml.block.ModBlockEntityTypes;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
@@ -89,7 +90,7 @@ public class PotionCauldronBlockEntity extends BlockEntity {
         if (world != null) {
             if (world.isClient()) {
                 this.toUpdatePacket();
-                CauldronFix.rebuildBlock(pos);
+                CauldronFixClient.rebuildBlock(pos);
             } else if (world instanceof ServerWorld) {
                 ((ServerWorld) world).getChunkManager().markForUpdate(pos);
             }

@@ -4,6 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import mypals.ml.block.ModBlocks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
@@ -13,7 +14,7 @@ import static mypals.ml.CauldronFix.MOD_ID;
 
 public class CauldronOverlayRenderer {
     private static final Identifier CAULDRON_OVERLAY = Identifier.of(MOD_ID, "textures/misc/cauldron_overlay.png");
-    public static void update(DrawContext draw) {
+    public static void update(DrawContext drawContext) {
         MinecraftClient client = MinecraftClient.getInstance();
         if (client.options.getPerspective().isFirstPerson()) {
             assert client.player != null;
@@ -22,12 +23,10 @@ public class CauldronOverlayRenderer {
                 RenderSystem.disableDepthTest();
                 RenderSystem.depthMask(false);
                 RenderSystem.enableBlend();
-                draw.setShaderColor(1.0f, 1.0f, 1.0f, 1);
-                draw.drawTexture(CAULDRON_OVERLAY, 0, 0,-90, 0.0f, 0.0f, draw.getScaledWindowWidth(), draw.getScaledWindowHeight(), draw.getScaledWindowWidth(), draw.getScaledWindowHeight());
+                drawContext.drawTexture(RenderLayer::getGuiTexturedOverlay, CAULDRON_OVERLAY, 0,-90, 0.0f, 0.0f, drawContext.getScaledWindowWidth(), drawContext.getScaledWindowHeight(), drawContext.getScaledWindowWidth(), drawContext.getScaledWindowHeight());
                 RenderSystem.disableBlend();
                 RenderSystem.depthMask(true);
                 RenderSystem.enableDepthTest();
-                draw.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
             }
         }
     }

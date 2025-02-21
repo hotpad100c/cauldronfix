@@ -22,11 +22,9 @@ import net.minecraft.stat.Stats;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.random.Random;
-import net.minecraft.world.BlockView;
-import net.minecraft.world.World;
-import net.minecraft.world.WorldAccess;
-import net.minecraft.world.WorldEvents;
+import net.minecraft.world.*;
 import net.minecraft.world.explosion.Explosion;
+import net.minecraft.world.tick.ScheduledTickView;
 import org.jetbrains.annotations.Nullable;
 
 public class CauldronWithObsidian extends FallingBlock {
@@ -58,9 +56,10 @@ public class CauldronWithObsidian extends FallingBlock {
 
 
     @Override
-    protected BlockState getStateForNeighborUpdate(BlockState state, Direction direction, BlockState neighborState, WorldAccess world, BlockPos pos, BlockPos neighborPos) {
-        world.scheduleBlockTick(pos, this, this.getFallDelay());
-        return super.getStateForNeighborUpdate(state, direction, neighborState, world, pos, neighborPos);
+    protected BlockState getStateForNeighborUpdate(BlockState state, WorldView world, ScheduledTickView tickView, BlockPos pos, Direction direction, BlockPos neighborPos, BlockState neighborState, Random random) {
+        tickView.scheduleBlockTick(pos, this, this.getFallDelay());
+        return super.getStateForNeighborUpdate(state, world, tickView, pos, direction, neighborPos, neighborState, random);
+
     }
 
 
@@ -68,7 +67,7 @@ public class CauldronWithObsidian extends FallingBlock {
     public void afterBreak(World world, PlayerEntity player, BlockPos pos, BlockState state, @Nullable BlockEntity blockEntity, ItemStack tool) {
         player.incrementStat(Stats.MINED.getOrCreateStat(this));
         player.addExhaustion(0.005f);
-        if(EnchantmentHelper.getLevel(world.getRegistryManager().getWrapperOrThrow(RegistryKeys.ENCHANTMENT).getOrThrow(Enchantments.SILK_TOUCH) , tool) == 0) {
+        if(EnchantmentHelper.getLevel(world.getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT).getOrThrow(Enchantments.SILK_TOUCH) , tool) == 0) {
             world.setBlockState(pos, Blocks.CAULDRON.getDefaultState());
             world.spawnEntity(new ItemEntity(world,pos.getX(),pos.getY(),pos.getZ(),new ItemStack(Items.OBSIDIAN,1)));
         }
@@ -77,7 +76,7 @@ public class CauldronWithObsidian extends FallingBlock {
         }
     }
     @Override
-    public void onDestroyedByExplosion(World world, BlockPos pos, Explosion explosion) {
+    public void onDestroyedByExplosion(ServerWorld world, BlockPos pos, Explosion explosion) {
         world.setBlockState(pos, Blocks.OBSIDIAN.getDefaultState());
         world.spawnEntity(new ItemEntity(world,pos.toCenterPos().getX(),pos.toCenterPos().getY(),pos.toCenterPos().getZ(),new ItemStack(Items.CAULDRON,1)));
     }

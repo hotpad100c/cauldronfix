@@ -1,7 +1,5 @@
 accessWidener v2 named
 
-accessible method Lnet/minecraft/block/entity/HopperBlockEntity setTransferCooldown (I)V
-
 accessible field net/minecraft/block/entity/HopperBlockEntity transferCooldown I
 
 accessible field net/minecraft/item/DyeItem DYES Ljava/util/Map;

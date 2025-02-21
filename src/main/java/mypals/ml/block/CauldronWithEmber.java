@@ -1,16 +1,16 @@
 package mypals.ml.block;
 
+import net.fabricmc.fabric.api.item.v1.EquipmentSlotProvider;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.CampfireBlockEntity;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.ItemEntity;
-import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.*;
+import net.minecraft.entity.ai.TargetPredicate;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.*;
+import net.minecraft.item.equipment.EquipmentAsset;
 import net.minecraft.recipe.CampfireCookingRecipe;
 import net.minecraft.recipe.RecipeEntry;
 import net.minecraft.registry.RegistryKeys;
@@ -18,8 +18,8 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.stat.Stats;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
-import net.minecraft.util.ItemActionResult;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.random.Random;
@@ -32,11 +32,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 
-public class CauldronWithEmber extends Block implements Equipment {
-    @Override
-    public EquipmentSlot getSlotType() {
-        return EquipmentSlot.HEAD;
-    }
+public class CauldronWithEmber extends Block implements EquipmentSlotProvider {
 
     private int age = 5;
     public CauldronWithEmber(Settings settings) {
@@ -64,7 +60,7 @@ public class CauldronWithEmber extends Block implements Equipment {
     public void afterBreak(World world, PlayerEntity player, BlockPos pos, BlockState state, @Nullable BlockEntity blockEntity, ItemStack tool) {
         player.incrementStat(Stats.MINED.getOrCreateStat(this));
         player.addExhaustion(0.005f);
-        if(EnchantmentHelper.getLevel(world.getRegistryManager().getWrapperOrThrow(RegistryKeys.ENCHANTMENT).getOrThrow(Enchantments.SILK_TOUCH) , tool) == 0) {
+        if(EnchantmentHelper.getLevel(world.getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT).getOrThrow(Enchantments.SILK_TOUCH) , tool) == 0) {
             world.setBlockState(pos, Blocks.CAULDRON.getDefaultState());
             world.spawnEntity(new ItemEntity(world,pos.toCenterPos().getX(),pos.toCenterPos().getY(),pos.toCenterPos().getZ(),new ItemStack(Items.COAL,3)));
         }
@@ -81,25 +77,25 @@ public class CauldronWithEmber extends Block implements Equipment {
         }
     }
     @Override
-    protected ItemActionResult onUseWithItem(ItemStack stack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
+    protected ActionResult onUseWithItem(ItemStack stack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
         if(stack.getItem() instanceof ShovelItem)
         {
             world.setBlockState(pos,ModBlocks.CAULDRON_WITH_HALF_COBBLE_STONE.getDefaultState());
             player.swingHand(player.getActiveHand());
             world.playSound(null, pos, SoundEvents.BLOCK_FIRE_EXTINGUISH, SoundCategory.BLOCKS, 1f, 1f);
-            return ItemActionResult.SUCCESS;
+            return ActionResult.SUCCESS;
         }
-        return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+        return ActionResult.PASS_TO_DEFAULT_BLOCK_ACTION;
     }
     @Override
     public void onSteppedOn(World world, BlockPos pos, BlockState state, Entity entity) {
         if (!entity.bypassesSteppingEffects() && entity instanceof LivingEntity) {
-            entity.damage(world.getDamageSources().hotFloor(), 1.0f);
+            entity.damage((ServerWorld) world, world.getDamageSources().hotFloor(), 1.0f);
         }
         super.onSteppedOn(world, pos, state, entity);
     }
     @Override
-    public void onDestroyedByExplosion(World world, BlockPos pos, Explosion explosion) {
+    public void onDestroyedByExplosion(ServerWorld world, BlockPos pos, Explosion explosion) {
         world.spawnEntity(new ItemEntity(world,pos.toCenterPos().getX(),pos.toCenterPos().getY(),pos.toCenterPos().getZ(),new ItemStack(Items.COAL,3)));
         world.spawnEntity(new ItemEntity(world,pos.toCenterPos().getX(),pos.toCenterPos().getY(),pos.toCenterPos().getZ(),new ItemStack(Items.CAULDRON,1)));
     }
@@ -109,4 +105,10 @@ public class CauldronWithEmber extends Block implements Equipment {
     protected int getComparatorOutput(BlockState state, World world, BlockPos pos) {
         return 6;
     }
+
+    @Override
+    public EquipmentSlot getPreferredEquipmentSlot(LivingEntity entity, ItemStack stack) {
+        return EquipmentSlot.HEAD;
+    }
+
 }

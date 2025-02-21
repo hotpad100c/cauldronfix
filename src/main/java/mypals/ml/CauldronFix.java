@@ -11,6 +11,9 @@ import net.fabricmc.api.Environment;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
+import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
+import net.fabricmc.fabric.api.resource.ResourcePackActivationType;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -29,7 +32,7 @@ import net.minecraft.stat.Stats;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
-import net.minecraft.util.ItemActionResult;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -47,6 +50,13 @@ public class CauldronFix implements ModInitializer {
 
     @Override
     public void onInitialize() {
+        FabricLoader.getInstance().getModContainer(MOD_ID).ifPresent(container -> {
+            ResourceManagerHelper.registerBuiltinResourcePack(
+                    Identifier.of(MOD_ID, "3d_cauldron_cauldronfix"),
+                    container,
+                    ResourcePackActivationType.DEFAULT_ENABLED
+            );
+        });
         // This code runs as soon as Minecraft is in a mod-load-ready state.
         // However, some things (like resources) may still be uninitialized.
         // Proceed with mild caution.
@@ -155,7 +165,7 @@ public class CauldronFix implements ModInitializer {
                 world.emitGameEvent(null, GameEvent.FLUID_PLACE, pos);
             }
 
-            return ItemActionResult.success(world.isClient);
+            return ActionResult.SUCCESS;
         };
     }
 
@@ -192,32 +202,11 @@ public class CauldronFix implements ModInitializer {
 				CauldronFix.rebuildBlock(pos);
 			}*/
             world.updateListeners(pos, state, state, 0);
-            return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+            return ActionResult.PASS_TO_DEFAULT_BLOCK_ACTION;
         };
     }
 
     public static CauldronBehavior createFillFromBucketBehavior(Block cauldron, SoundEvent bucketEmptySound) {
         return (state, world, pos, player, hand, stack) -> CauldronBehavior.fillCauldron(world, pos, player, hand, stack, cauldron.getDefaultState(), bucketEmptySound);
-    }
-
-    @Environment(EnvType.CLIENT)
-    public static int getColor(BlockRenderView world, BlockPos pos) {
-        BlockEntity blockEntity = world.getBlockEntity(pos);
-
-        if (blockEntity instanceof ColoredCauldronBlockEntity colorCauldron) {
-            int color = colorCauldron.getCauldronColor();
-            if (color != -1)
-                return colorCauldron.getCauldronColor();
-        } else if (blockEntity instanceof PotionCauldronBlockEntity potionCauldron) {
-            int color = potionCauldron.getCauldronColor();
-            if (color != -1)
-                return potionCauldron.getCauldronColor();
-        }
-        return BiomeColors.getWaterColor(world, pos);
-    }
-
-    @Environment(EnvType.CLIENT)
-    public static void rebuildBlock(BlockPos pos) {
-        MinecraftClient.getInstance().worldRenderer.scheduleBlockRenders(pos.getX(), pos.getY(), pos.getZ(), pos.getX(), pos.getY(), pos.getZ());
     }
 }

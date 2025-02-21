@@ -22,7 +22,7 @@ import net.minecraft.util.Identifier;
 import java.util.concurrent.CompletableFuture;
 
 import static mypals.ml.CauldronFix.MOD_ID;
-import static mypals.ml.block.ModBlocks.registerBlocks;
+import static mypals.ml.block.ModBlocks.register;
 
 public class CauldronFixDataGenerator implements DataGeneratorEntrypoint {
 

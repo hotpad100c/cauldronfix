@@ -4,6 +4,7 @@ import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import mypals.ml.CauldronBlockWatcher;
 import mypals.ml.CauldronFix;
+import mypals.ml.CauldronFixClient;
 import mypals.ml.block.ModBlocks;
 import mypals.ml.block.advancedCauldron.coloredCauldrons.ColoredCauldron;
 import mypals.ml.block.advancedCauldron.coloredCauldrons.ColoredCauldronBlockEntity;
@@ -25,8 +26,8 @@ import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.stat.Stats;
 import net.minecraft.state.property.Properties;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
-import net.minecraft.util.ItemActionResult;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.random.Random;
@@ -47,19 +48,19 @@ public abstract class AbstractCauldronBlockMixin {
     protected abstract void scheduledTick(BlockState state, ServerWorld world, BlockPos pos, Random random);
 
     @Inject(at = @At("HEAD"), method = "onUseWithItem")
-    private void mixinOnUseWithItem(ItemStack stack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit, CallbackInfoReturnable<ItemActionResult> cir) {
+    private void mixinOnUseWithItem(ItemStack stack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit, CallbackInfoReturnable<ActionResult> cir) {
         CauldronBlockWatcher.cauldronBlockCheckWithItem(world, pos, stack, player, hand, cir);
     }
 
     @WrapMethod(method = "onUseWithItem")
-    protected ItemActionResult onUseWithItem(ItemStack stack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit, Operation<ItemActionResult> original) {
+    protected ActionResult onUseWithItem(ItemStack stack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit, Operation<ActionResult> original) {
 
         ItemStack stack1 = isConcretePowder(stack);
         if (!stack1.isEmpty() && (state.getBlock().equals(Blocks.WATER_CAULDRON) || state.getBlock().equals(ModBlocks.MILK_CAULDRON))) {
             player.swingHand(hand, true);
             player.setStackInHand(hand, stack1);
             world.playSound(player, pos, SoundEvents.ITEM_DYE_USE, SoundCategory.PLAYERS);
-            return ItemActionResult.SUCCESS;
+            return ActionResult.SUCCESS;
         } else if (stack.getItem() instanceof DyeItem && state.getBlock().equals(Blocks.WATER_CAULDRON)) {
             player.swingHand(hand, true);
             player.setStackInHand(hand, stack);
@@ -67,14 +68,14 @@ public abstract class AbstractCauldronBlockMixin {
             //ColoredCauldron colorC = (ColoredCauldron) world.getBlockState(pos).getBlock();
             BlockEntity b = world.getBlockEntity(pos);
             if (b == null) {
-                return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+                return ActionResult.PASS_TO_DEFAULT_BLOCK_ACTION;
             } else if (b instanceof ColoredCauldronBlockEntity) {
                 ((ColoredCauldronBlockEntity) b).setColor(((DyeItem) stack.getItem()).getColor());
                 if (!player.isSpectator() && !player.isCreative())
                     stack.decrement(1);
             }
             world.playSound(player, pos, SoundEvents.ITEM_DYE_USE, SoundCategory.PLAYERS);
-            return ItemActionResult.SUCCESS;
+            return ActionResult.SUCCESS;
         } else if (stack.getItem() instanceof PotionItem && !Objects.requireNonNull(stack.get(DataComponentTypes.POTION_CONTENTS)).matches(Potions.WATER) && (state.getBlock().equals(Blocks.WATER_CAULDRON) || state.getBlock().equals(Blocks.CAULDRON) || state.getBlock().equals(ModBlocks.COLORED_CAULDRON))) {
 
             PotionContentsComponent potionContentsComponent = stack.getOrDefault(DataComponentTypes.POTION_CONTENTS, PotionContentsComponent.DEFAULT);
@@ -95,7 +96,9 @@ public abstract class AbstractCauldronBlockMixin {
                         player.setStackInHand(hand, ItemUsage.exchangeStack(stack, player, new ItemStack(Items.GLASS_BOTTLE)));
                         world.playSound(player, pos, SoundEvents.ITEM_BOTTLE_EMPTY, SoundCategory.PLAYERS, 1, 1);
                         world.updateListeners(pos, state, state, 0);
-                        CauldronFix.rebuildBlock(pos);
+                        if(world.isClient) {
+                            CauldronFixClient.rebuildBlock(pos);
+                        }
                     }
                 } else {
                     world.setBlockState(pos, ModBlocks.POTION_CAULDRON.getDefaultState());
@@ -112,7 +115,9 @@ public abstract class AbstractCauldronBlockMixin {
                         player.setStackInHand(hand, ItemUsage.exchangeStack(stack, player, new ItemStack(Items.GLASS_BOTTLE)));
                         world.playSound(player, pos, SoundEvents.ITEM_BOTTLE_EMPTY, SoundCategory.PLAYERS, 1, 1);
                         world.updateListeners(pos, state, state, 0);
-                        CauldronFix.rebuildBlock(pos);
+                        if(world.isClient) {
+                            CauldronFixClient.rebuildBlock(pos);
+                        }
                     }
                 }
 

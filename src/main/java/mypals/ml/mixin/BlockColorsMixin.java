@@ -1,6 +1,7 @@
 package mypals.ml.mixin;
 
 import mypals.ml.CauldronFix;
+import mypals.ml.CauldronFixClient;
 import mypals.ml.block.ModBlocks;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.color.block.BlockColors;
@@ -14,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 public class BlockColorsMixin {
     @Inject(method = "create", at = @At("TAIL"), locals = LocalCapture.CAPTURE_FAILHARD)
     private static void cauldron_dyeing(CallbackInfoReturnable<BlockColors> cir, BlockColors blockColors) {
-        blockColors.registerColorProvider((state, world, pos, tintIndex) -> world != null && pos != null ? CauldronFix.getColor(world, pos) : -1, ModBlocks.COLORED_CAULDRON);
-        blockColors.registerColorProvider((state, world, pos, tintIndex) -> world != null && pos != null ? CauldronFix.getColor(world, pos) : -1, ModBlocks.POTION_CAULDRON);
+        blockColors.registerColorProvider((state, world, pos, tintIndex) -> world != null && pos != null ? CauldronFixClient.getColor(world, pos) : -1, ModBlocks.COLORED_CAULDRON);
+        blockColors.registerColorProvider((state, world, pos, tintIndex) -> world != null && pos != null ? CauldronFixClient.getColor(world, pos) : -1, ModBlocks.POTION_CAULDRON);
     }
 }

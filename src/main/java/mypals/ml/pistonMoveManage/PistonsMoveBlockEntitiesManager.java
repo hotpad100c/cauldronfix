@@ -79,7 +79,7 @@ public class PistonsMoveBlockEntitiesManager {
             if(world.getBlockEntity(pos) != null)
                 world.setBlockState(pos, state, 0);
 
-            world.updateNeighbor(pos, block, pos);
+            world.updateNeighbor(pos, block, null);
         }
 
         return true;
