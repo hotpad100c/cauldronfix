@@ -95,7 +95,8 @@ public abstract class AbstractCauldronBlockMixin {
                         player.setStackInHand(hand, ItemUsage.exchangeStack(stack, player, new ItemStack(Items.GLASS_BOTTLE)));
                         world.playSound(player, pos, SoundEvents.ITEM_BOTTLE_EMPTY, SoundCategory.PLAYERS, 1, 1);
                         world.updateListeners(pos, state, state, 0);
-                        CauldronFix.rebuildBlock(pos);
+                        if(world.isClient)
+                            CauldronFix.rebuildBlock(pos);
                     }
                 } else {
                     world.setBlockState(pos, ModBlocks.POTION_CAULDRON.getDefaultState());
@@ -112,7 +113,8 @@ public abstract class AbstractCauldronBlockMixin {
                         player.setStackInHand(hand, ItemUsage.exchangeStack(stack, player, new ItemStack(Items.GLASS_BOTTLE)));
                         world.playSound(player, pos, SoundEvents.ITEM_BOTTLE_EMPTY, SoundCategory.PLAYERS, 1, 1);
                         world.updateListeners(pos, state, state, 0);
-                        CauldronFix.rebuildBlock(pos);
+                        if(world.isClient)
+                            CauldronFix.rebuildBlock(pos);
                     }
                 }
 
